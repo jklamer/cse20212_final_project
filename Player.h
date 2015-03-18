@@ -35,3 +35,5 @@ class Player : public Person{
   int sugarTolerance;//determines how much the sugar affects the player
   int digestionSpeed;//determines how quickly the player can digest the sugar
 };
+
+#endif

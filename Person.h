@@ -22,3 +22,7 @@ class Person{
  private:
   int speed;//private data member that determines the speed at which the person moves
 };
+
+#endif
+
+
