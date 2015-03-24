@@ -1,9 +1,9 @@
-/*                                                                                         
-PlayerDriver.h                                                                                       
-Jeremy Doyle                                                                                       
-cse 20210                                                                                        
-March 18, 2015                                                                                   
-purpose: Driver file to instantiate objects of Player class                                       
+/*                                                  
+PlayerDriver.h                          
+Jeremy Doyle                              
+cse 20210                              
+March 18, 2015               
+purpose: Driver file to instantiate objects of Player class       
 */
 
 #include<iostream>
@@ -13,15 +13,10 @@ purpose: Driver file to instantiate objects of Player class
 using namespace std;
 
 int main(){
-  Player Ralph = ("Ralph",1,3,1,3);
-  Player Sledge = ("Sledge",3,2,1,2);
-  Player Dozer = ("Dozer",2,3,1,2);
-  Player Biz = ("Biz",2,1,3,2);
+  Player Ralph("Ralph",1,3,1,0,3);
+  Player Sledge("Sledge",3,2,1,0,2);
+  Player Dozer("Dozer",2,3,1,0,2);
+  Player Biz("Biz",2,1,3,0,2);
 
-  string character;
-
-  cout<<"Please enter the name of the player whose characteristics you wish to view."<<endl;
-  cin<<character;
-
-  cout<<character.getName()<<" drinks soda at a speed of "<<character.getDrinkSpeed()<<", has a sugar tolerance level of "<<character.getSugarTolerance<<", digests the soda at a speed of "<<character.getDigestionSpeed()<<", and runs at a speed of "<<character.getSpeed()<<"."<<endl;
+  cout<<Ralph.getName()<<" drinks soda at a speed of "<<Ralph.getDrinkSpeed()<<", currently has carbonation level of "<<Ralph.getCarbLevel()<<", has a carbonation tolerance level of "<<Ralph.getCarbTolerance()<<", digests the soda at a speed of "<<Ralph.getDigestionSpeed()<<", and runs at a speed of "<<Ralph.getSpeed()<<"."<<endl;
 }
