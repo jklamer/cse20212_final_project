@@ -1,0 +1,4 @@
+#! /bin/tcsh
+
+setenv PATH /afs/nd.edu/user14/csesoft/new/bin:$PATH
+setenv LD_LIBRARY_PATH /afs/nd.edu/user14/csesoft/new/lib
