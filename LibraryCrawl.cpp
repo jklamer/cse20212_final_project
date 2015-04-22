@@ -41,6 +41,7 @@ int main( int argc, char* args[])
 			case 0:
 				//state=gameLevel.menu();
 				level=0;
+				state=1;
 				break;
 			case 1:
 				state=gameLevel.playLevel(levelSelect[level]);

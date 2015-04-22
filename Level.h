@@ -59,7 +59,7 @@ class Level
 		SDL_Texture * librarian=NULL;
 		SDL_Surface * librarianRaw=NULL;
 		//Player biz(char1,10,50,3,0,20);
-		
+		bool firstUpload;
 		
 		
 		

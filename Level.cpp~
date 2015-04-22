@@ -30,14 +30,15 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	int xorigen=300;
 	int yorigen=100;
 	rendererCheck=true;
+	firstUpload=true;
 	
 	//biz(char1,10,50,3,0,20)
 	
 	
 	squareSpecs.x=300; 
 	squareSpecs.y=100;
-	squareSpecs.w= 30;
-	squareSpecs.h= 30;
+	squareSpecs.w=30;
+	squareSpecs.h=30;
 	
 	//load the level data into the array
 	//if(levelFile != NULL)
@@ -165,6 +166,7 @@ void Level::loadLevel(string file)
 		}
 	}
 	
+	firstUpload=true;
 }
 
 void Level::print()
@@ -301,7 +303,10 @@ void Level::update()
 			}else if(floorArray[i][j] == 3)
  			{
  				SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
- 				biz.position(i,j);
+ 				if(firstUpload){
+ 					biz.position(i,j);
+ 					firstUpload=false;
+ 				}
  				
  			}else if(floorArray[i][j] == 2)
  			{	
@@ -350,14 +355,15 @@ int Level::playLevel(string level)
 	{
 		while(SDL_PollEvent( &e) != 0)
 		{
-		
+			cout<<"polled event"<<endl;
 			if(e.type == SDL_QUIT )
 			{
 				quit=true;
-				state == 99; //exits game
+				state = 99; //exits game
 				continue;
 			}else if(e.type == SDL_KEYDOWN)
 			{
+				cout<<"key pressed"<<endl;
 				switch(e.key.keysym.sym)
 				{
 					case SDLK_SPACE:
@@ -373,7 +379,7 @@ int Level::playLevel(string level)
 						move(2);//enter left code here
 						break;
 					case SDLK_d: //right
-						move(4);//enter left code here
+						move(3);//enter left code here
 						break;
 					case SDLK_q:
 						//enter quit code here
@@ -408,18 +414,21 @@ int Level::playLevel(string level)
 	
 	
 	
-	return 1;
+	return state;
 }	
 
 void Level::move(int direct)
 {	
+	cout<<"IN MOVE"<<endl;
+	int oldX=biz.getX();cout<<"OLD X:"<<oldX<<endl;
+	int oldY=biz.getY(); cout<<"OLD Y:"<<oldY<<endl;
 	switch(direct)
 	{
 		case 0:
 			if(biz.getY() == 0)
 			{
 				biz.position(biz.getX(),biz.getY()); //same place
-			}else if(floorArray[biz.getX()][biz.getY()-1] == 1)
+			}else if(floorArray[biz.getY()-1][biz.getX()] == 1)
 			{
 				biz.position(biz.getX(),biz.getY()); //same place
 			}else
@@ -431,7 +440,7 @@ void Level::move(int direct)
 			if(biz.getY() == 19)
 			{
 				biz.position(biz.getX(),biz.getY()); //same place
-			}else if(floorArray[biz.getX()][biz.getY()+1] == 1)
+			}else if(floorArray[biz.getY()+1][biz.getX()] == 1)
 			{
 				biz.position(biz.getX(),biz.getY()); //same place
 			}else
@@ -443,7 +452,7 @@ void Level::move(int direct)
 			if(biz.getX() == 0)
 			{
 				biz.position(biz.getX(),biz.getY()); //same place
-			}else if(floorArray[biz.getX()-1][biz.getY()] == 1)
+			}else if(floorArray[biz.getY()][biz.getX()-1] == 1)
 			{
 				biz.position(biz.getX(),biz.getY()); //same place
 			}else
@@ -455,7 +464,7 @@ void Level::move(int direct)
 			if(biz.getX() == 19)
 			{
 				biz.position(biz.getX(),biz.getY()); //same place
-			}else if(floorArray[biz.getX()+1][biz.getY()] == 1)
+			}else if(floorArray[biz.getY()][biz.getX()+1] == 1)
 			{
 				biz.position(biz.getX(),biz.getY()); //same place
 			}else
@@ -464,12 +473,21 @@ void Level::move(int direct)
 			}
 			break;
 	}
+	//cout<<"New X:"<<biz.getX()<<endl;
+	 //cout<<"New Y:"<<biz.getY()<<endl;
+	//cout<<"Square specs h"<<squareSpecs.h<<endl;
 	
+	floorArray[oldY][oldX]=0;
+	floorArray[biz.getY()][biz.getX()]=3;
+	update();
+	//squareSpecs.x=biz.getX()*squareSpecs.w + xorigen;
+	//squareSpecs.y=biz.getY()*(squareSpecs.h) + 100;
+	 //cout<<squareSpecs.x<<","<<squareSpecs.y<<endl;
 	
-	squareSpecs.x=biz.getX()*squareSpecs.w + xorigen;
-	squareSpecs.y=biz.getY()*squareSpecs.h+ yorigen;
+	//SDL_RenderClear(renderer1);
+	//SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+	//SDL_RenderPresent(renderer1);
 	
-	SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
 }
 	
 	
