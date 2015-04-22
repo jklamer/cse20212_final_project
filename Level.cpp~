@@ -9,9 +9,14 @@ implementation file for level class in Library Crawl
 #include <SDL2/SDL.h>
 #include <SDL/SDL_image.h>
 #include "Level.h"
+#include "Person.h"
+#include "Player.h"
 using namespace std;
 const int SCREEN_WIDTH = 1300;
 const int SCREEN_HEIGHT = 800;
+
+string char1("Biz");
+Player biz(char1,10,50,3,0,20);
 
 //construct
 Level::Level(int character, int carbonationLevel, int levelNumber, string levelFileName)
@@ -22,16 +27,29 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	levelFile=levelFileName;
 	levelHeight=20;
 	levelWidth=20;
+	int xorigen=300;
+	int yorigen=100;
 	rendererCheck=true;
+	firstUpload=true;
+	
+	//biz(char1,10,50,3,0,20)
+	
+	
+	squareSpecs.x=300; 
+	squareSpecs.y=100;
+	squareSpecs.w=30;
+	squareSpecs.h=30;
 	
 	//load the level data into the array
-	try{
-		loadLevel(levelFile);
-	} catch(char * excep)
-	{
-		cout<<excep;
-	}
-	
+	//if(levelFile != NULL)
+	//{
+		try{
+			loadLevel(levelFile);
+		} catch(char * excep)
+		{
+			cout<<excep;
+		}
+	//}
 	//initialize image pointers to NULL
 	gameWindow=NULL;
 	screen=NULL;
@@ -93,11 +111,6 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 		return;
 	}
 	
-	update();
-	
-	
-	
-	
 	
 	
 }
@@ -141,6 +154,7 @@ void Level::loadLevel(string file)
 	if(input == NULL)
 	{
 		throw "Unable to to open file";
+		return;
 	}
 	
 	for(int i=0; i<levelHeight;i++)
@@ -152,6 +166,7 @@ void Level::loadLevel(string file)
 		}
 	}
 	
+	firstUpload=true;
 }
 
 void Level::print()
@@ -244,12 +259,9 @@ void Level::loadImages()
 
 void Level::update()
 {
-	
-	SDL_Rect squareSpecs;
+
 	squareSpecs.x=300; 
 	squareSpecs.y=100;
-	squareSpecs.w= 30;
-	squareSpecs.h= 30;
 	SDL_Rect floorSpecs = {squareSpecs.x,squareSpecs.y,squareSpecs.w*levelWidth,squareSpecs.h*levelHeight};
 	SDL_Rect wallSpecs= {squareSpecs.x-squareSpecs.w/2,squareSpecs.y-squareSpecs.h/2,squareSpecs.w*(levelWidth+1),squareSpecs.h*(levelHeight+1)};
 	
@@ -291,6 +303,10 @@ void Level::update()
 			}else if(floorArray[i][j] == 3)
  			{
  				SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+ 				if(firstUpload){
+ 					biz.position(i,j);
+ 					firstUpload=false;
+ 				}
  				
  			}else if(floorArray[i][j] == 2)
  			{	
@@ -298,6 +314,9 @@ void Level::update()
  			}else if(floorArray[i][j] == 4)
  			{
  				SDL_RenderCopy(renderer1,recycle,NULL, &squareSpecs);
+ 			}else if(floorArray[i][j] == 5)
+ 			{
+ 				SDL_RenderCopy(renderer1,librarian,NULL, &squareSpecs);
  			}
  			
 			
@@ -314,3 +333,166 @@ void Level::update()
 	//}
 	SDL_UpdateWindowSurface(gameWindow);
 }
+
+
+
+
+
+int Level::playLevel(string level)
+{
+	//load a new level in.
+	levelFile=level;
+	loadLevel(level);
+	update();
+	bool quit =false;
+	SDL_Event e;
+	int state=1;
+	
+	
+	
+	//while the level has not been quit
+	while(!quit)
+	{
+		while(SDL_PollEvent( &e) != 0)
+		{
+			cout<<"polled event"<<endl;
+			if(e.type == SDL_QUIT )
+			{
+				quit=true;
+				state = 99; //exits game
+				continue;
+			}else if(e.type == SDL_KEYDOWN)
+			{
+				cout<<"key pressed"<<endl;
+				switch(e.key.keysym.sym)
+				{
+					case SDLK_SPACE:
+						//enter Drinking code here
+						break;
+					case SDLK_w: //up
+						move(0);
+						break;
+					case SDLK_s: //down
+						move(1);//enter down code here
+						break;
+					case SDLK_a: //left
+						move(2);//enter left code here
+						break;
+					case SDLK_d: //right
+						move(3);//enter left code here
+						break;
+					case SDLK_q:
+						//enter quit code here
+						state=0;
+						quit=true;
+						continue;
+						break;
+					default:
+						break;
+				}			
+			}
+		}
+	
+	
+		//insert librarian update code here
+		
+		//point increment code here
+		
+		//endcheck
+	}
+		
+		
+		
+		
+		
+		
+			
+	
+	
+	
+	
+	
+	
+	
+	return state;
+}	
+
+void Level::move(int direct)
+{	
+	cout<<"IN MOVE"<<endl;
+	int oldX=biz.getX();cout<<"OLD X:"<<oldX<<endl;
+	int oldY=biz.getY(); cout<<"OLD Y:"<<oldY<<endl;
+	switch(direct)
+	{
+		case 0:
+			if(biz.getY() == 0)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else if(floorArray[biz.getY()-1][biz.getX()] == 1)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else
+			{
+				biz.position(biz.getX(),biz.getY()-1);
+			}
+			break;
+		case 1:
+			if(biz.getY() == 19)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else if(floorArray[biz.getY()+1][biz.getX()] == 1)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else
+			{
+				biz.position(biz.getX(),biz.getY()+1);
+			}
+			break;
+		case 2:
+			if(biz.getX() == 0)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else if(floorArray[biz.getY()][biz.getX()-1] == 1)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else
+			{
+				biz.position(biz.getX()-1,biz.getY());
+			}
+			break;	
+		case 3:
+			if(biz.getX() == 19)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else if(floorArray[biz.getY()][biz.getX()+1] == 1)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else
+			{
+				biz.position(biz.getX()+1,biz.getY());
+			}
+			break;
+	}
+	//cout<<"New X:"<<biz.getX()<<endl;
+	 //cout<<"New Y:"<<biz.getY()<<endl;
+	//cout<<"Square specs h"<<squareSpecs.h<<endl;
+	
+	floorArray[oldY][oldX]=0;
+	floorArray[biz.getY()][biz.getX()]=3;
+	update();
+	//squareSpecs.x=biz.getX()*squareSpecs.w + xorigen;
+	//squareSpecs.y=biz.getY()*(squareSpecs.h) + 100;
+	 //cout<<squareSpecs.x<<","<<squareSpecs.y<<endl;
+	
+	//SDL_RenderClear(renderer1);
+	//SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+	//SDL_RenderPresent(renderer1);
+	
+}
+	
+	
+	
+
+	
+	
+	
