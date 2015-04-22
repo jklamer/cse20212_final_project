@@ -38,8 +38,8 @@ int Person::getY(){
 }
 
 void Person::position(int Xcoord, int Ycoord){
-	 x=Xcoord;
-	 y=Ycoord;
+	int x=Xcoord;
+	int y=Ycoord;
 }
 
 int Person::getWidth(){

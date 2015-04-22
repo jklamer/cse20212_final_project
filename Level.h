@@ -21,6 +21,13 @@ class Level
 		void update();
 		void loadLevel(string);
 		void loadImages();
+		int playLevel(string);
+		int menu();
+		int charSelectScreen();
+		int endScreen();
+		
+		
+		
 	private:
 		int levelHeight;
 		int levelWidth;
@@ -28,6 +35,7 @@ class Level
 		int carbLevel;
 		int levelNum;
 		int floorArray[20][20];
+		SDL_Rect squareSpecs;
 		string levelFile;
 		vector<SDL_Surface * > images;
 		vector<SDL_Texture *> textures;

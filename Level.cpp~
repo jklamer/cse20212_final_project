@@ -9,6 +9,8 @@ implementation file for level class in Library Crawl
 #include <SDL2/SDL.h>
 #include <SDL/SDL_image.h>
 #include "Level.h"
+#include "Person.h"
+#include "Player.h"
 using namespace std;
 const int SCREEN_WIDTH = 1300;
 const int SCREEN_HEIGHT = 800;
@@ -24,14 +26,22 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	levelWidth=20;
 	rendererCheck=true;
 	
-	//load the level data into the array
-	try{
-		loadLevel(levelFile);
-	} catch(char * excep)
-	{
-		cout<<excep;
-	}
 	
+	squareSpecs.x=300; 
+	squareSpecs.y=100;
+	squareSpecs.w= 30;
+	squareSpecs.h= 30;
+	
+	//load the level data into the array
+	if(levelFile!=NULL)
+	{
+		try{
+			loadLevel(levelFile);
+		} catch(char * excep)
+		{
+			cout<<excep;
+		}
+	}
 	//initialize image pointers to NULL
 	gameWindow=NULL;
 	screen=NULL;
@@ -93,11 +103,6 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 		return;
 	}
 	
-	update();
-	
-	
-	
-	
 	
 	
 }
@@ -141,6 +146,7 @@ void Level::loadLevel(string file)
 	if(input == NULL)
 	{
 		throw "Unable to to open file";
+		return;
 	}
 	
 	for(int i=0; i<levelHeight;i++)
@@ -244,12 +250,9 @@ void Level::loadImages()
 
 void Level::update()
 {
-	
-	SDL_Rect squareSpecs;
+
 	squareSpecs.x=300; 
 	squareSpecs.y=100;
-	squareSpecs.w= 30;
-	squareSpecs.h= 30;
 	SDL_Rect floorSpecs = {squareSpecs.x,squareSpecs.y,squareSpecs.w*levelWidth,squareSpecs.h*levelHeight};
 	SDL_Rect wallSpecs= {squareSpecs.x-squareSpecs.w/2,squareSpecs.y-squareSpecs.h/2,squareSpecs.w*(levelWidth+1),squareSpecs.h*(levelHeight+1)};
 	
@@ -298,6 +301,9 @@ void Level::update()
  			}else if(floorArray[i][j] == 4)
  			{
  				SDL_RenderCopy(renderer1,recycle,NULL, &squareSpecs);
+ 			}else if(floorArray[i][j] == 5)
+ 			{
+ 				SDL_RenderCopy(renderer1,librarian,NULL, &squareSpecs);
  			}
  			
 			
@@ -314,3 +320,85 @@ void Level::update()
 	//}
 	SDL_UpdateWindowSurface(gameWindow);
 }
+
+
+
+
+
+int playLevel(string level)
+{
+	//load a new level in.
+	levelFile=level;
+	loadLevel(level);
+	update();
+	bool quit =false;
+	SDL_Event e;
+	int state=1;
+	
+	
+	
+	//while the level has not been quit
+	while(!quit)
+	{
+		while(SDL_PollEvent( &e) != 0)
+		{
+		
+			if(e.type == SDL_QUIT )
+			{
+				quit=true;
+				state == 99; //exits game
+				continue;
+			}else if(e.type == SDL_KEYDOWN)
+			{
+				case SDLK_SPACE:
+					//enter Drinking code here
+					break;
+				case SDLK_w: //up
+					//enter up code here
+					break;
+				case SDLK_s: //down
+					//enter down code here
+					break;
+				case SDLK_d: //right
+					//enter right code here
+					break;
+				case SDLK_a:
+					//enter left code here
+					break;
+				case SDL_q:
+					//enter quit cose here
+					state=0;
+					quit=true;
+					continue;
+					break;
+				default:
+					break;
+			}
+		}
+	
+	
+		//insert librarian update code here
+		
+		//point increment code here
+		
+		//endcheck
+	}
+		
+		
+		
+		
+		
+		
+			
+	
+	
+	
+	
+	
+	
+	
+	return 1;
+	
+	
+	
+	
