@@ -27,11 +27,18 @@ class Level
 		//int menu();
 		//int charSelectScreen();
 		//int endScreen();
-		void move(int);
+		
 		
 		
 		
 	private:
+		//helpers
+		void move(int);
+		void moveLibs();
+		void changeChar(int);
+	
+			
+		//declare variables
 		int levelHeight;
 		int levelWidth;
 		int charSelect;
@@ -44,6 +51,8 @@ class Level
 		string levelFile;
 		vector<SDL_Surface * > images;
 		vector<SDL_Texture *> textures;
+		vector<Player> players;
+		vector<Person> librarians;
 		SDL_Window * gameWindow=NULL;
 		SDL_Surface * screen=NULL;
 		SDL_Renderer * renderer1=NULL;
@@ -58,7 +67,6 @@ class Level
 		SDL_Surface * recycleRaw=NULL;	
 		SDL_Texture * librarian=NULL;
 		SDL_Surface * librarianRaw=NULL;
-		//Player biz(char1,10,50,3,0,20);
 		bool firstUpload;
 		
 		

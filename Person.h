@@ -21,8 +21,8 @@ using namespace std;
 class Person{
 	public:
 
-		Person();//default constructor
-		virtual void print()=0;//pure virtual function to display the person
+		Person(int =35);//default constructor
+		//void print()=0;//pure virtual function to display the person
 		void move(char);//function to move the person. Takes char (wasd) as input to determine direction
 		int getSpeed();//returns the speed
 		void setSpeed(int);//change speed

@@ -9,4 +9,4 @@ void Level::render(int x, int y, SDL_Rect* clip=NULL){
 }
 	SDL_SetRenderDrawColow(gameRenderer, 0xFF);
 	SDL_RenderClear(gRenderer);
-	render(x, y, width, height);	
+	gSpriteSheetTexture.render(x, y, width, height);	
