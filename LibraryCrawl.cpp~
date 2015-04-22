@@ -23,7 +23,7 @@ using namespace std;
 const int SCREEN_WIDTH = 1200;
 const int SCREEN_HEIGHT = 700;
 
-const string LEVEL1("./Levels/Level1.txt");
+const string LEVEL1 ="./Levels/Level1.txt";
 
 int main( int argc, char* args[])
 {
