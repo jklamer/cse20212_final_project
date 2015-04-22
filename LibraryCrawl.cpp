@@ -39,7 +39,7 @@ int main( int argc, char* args[])
 		switch(state)
 		{
 			case 0:
-				state=gameLevel.menu();
+				//state=gameLevel.menu();
 				level=0;
 				break;
 			case 1:
@@ -54,13 +54,13 @@ int main( int argc, char* args[])
 				}
 				break;
 			case 2:
-				state=gameLevel.charSelectScreen();
+				//state=gameLevel.charSelectScreen();
 				break;
 			case 3:
-				state=gameLevel.endScreen();
+				//state=gameLevel.endScreen();
 				break;
 			default:
-				state=gameLevel.menu();
+				//state=gameLevel.menu();
 				break;
 		}
 	}
@@ -70,7 +70,6 @@ int main( int argc, char* args[])
 	
 	
 	//gameLevel.print();
-	SDL_Delay(5000);
 	
 	return EXIT_SUCCESS;
 }

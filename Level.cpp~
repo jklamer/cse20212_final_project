@@ -15,6 +15,9 @@ using namespace std;
 const int SCREEN_WIDTH = 1300;
 const int SCREEN_HEIGHT = 800;
 
+string char1("Biz");
+Player biz(char1,10,50,3,0,20);
+
 //construct
 Level::Level(int character, int carbonationLevel, int levelNumber, string levelFileName)
 {	
@@ -24,7 +27,11 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	levelFile=levelFileName;
 	levelHeight=20;
 	levelWidth=20;
+	int xorigen=300;
+	int yorigen=100;
 	rendererCheck=true;
+	
+	//biz(char1,10,50,3,0,20)
 	
 	
 	squareSpecs.x=300; 
@@ -33,15 +40,15 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	squareSpecs.h= 30;
 	
 	//load the level data into the array
-	if(levelFile!=NULL)
-	{
+	//if(levelFile != NULL)
+	//{
 		try{
 			loadLevel(levelFile);
 		} catch(char * excep)
 		{
 			cout<<excep;
 		}
-	}
+	//}
 	//initialize image pointers to NULL
 	gameWindow=NULL;
 	screen=NULL;
@@ -294,6 +301,7 @@ void Level::update()
 			}else if(floorArray[i][j] == 3)
  			{
  				SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+ 				biz.position(i,j);
  				
  			}else if(floorArray[i][j] == 2)
  			{	
@@ -325,7 +333,7 @@ void Level::update()
 
 
 
-int playLevel(string level)
+int Level::playLevel(string level)
 {
 	//load a new level in.
 	levelFile=level;
@@ -350,29 +358,32 @@ int playLevel(string level)
 				continue;
 			}else if(e.type == SDL_KEYDOWN)
 			{
-				case SDLK_SPACE:
-					//enter Drinking code here
-					break;
-				case SDLK_w: //up
-					//enter up code here
-					break;
-				case SDLK_s: //down
-					//enter down code here
-					break;
-				case SDLK_d: //right
-					//enter right code here
-					break;
-				case SDLK_a:
-					//enter left code here
-					break;
-				case SDL_q:
-					//enter quit cose here
-					state=0;
-					quit=true;
-					continue;
-					break;
-				default:
-					break;
+				switch(e.key.keysym.sym)
+				{
+					case SDLK_SPACE:
+						//enter Drinking code here
+						break;
+					case SDLK_w: //up
+						move(0);
+						break;
+					case SDLK_s: //down
+						move(1);//enter down code here
+						break;
+					case SDLK_a: //left
+						move(2);//enter left code here
+						break;
+					case SDLK_d: //right
+						move(4);//enter left code here
+						break;
+					case SDLK_q:
+						//enter quit code here
+						state=0;
+						quit=true;
+						continue;
+						break;
+					default:
+						break;
+				}			
 			}
 		}
 	
@@ -398,7 +409,72 @@ int playLevel(string level)
 	
 	
 	return 1;
+}	
+
+void Level::move(int direct)
+{	
+	switch(direct)
+	{
+		case 0:
+			if(biz.getY() == 0)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else if(floorArray[biz.getX()][biz.getY()-1] == 1)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else
+			{
+				biz.position(biz.getX(),biz.getY()-1);
+			}
+			break;
+		case 1:
+			if(biz.getY() == 19)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else if(floorArray[biz.getX()][biz.getY()+1] == 1)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else
+			{
+				biz.position(biz.getX(),biz.getY()+1);
+			}
+			break;
+		case 2:
+			if(biz.getX() == 0)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else if(floorArray[biz.getX()-1][biz.getY()] == 1)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else
+			{
+				biz.position(biz.getX()-1,biz.getY());
+			}
+			break;	
+		case 3:
+			if(biz.getX() == 19)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else if(floorArray[biz.getX()+1][biz.getY()] == 1)
+			{
+				biz.position(biz.getX(),biz.getY()); //same place
+			}else
+			{
+				biz.position(biz.getX()+1,biz.getY());
+			}
+			break;
+	}
 	
+	
+	squareSpecs.x=biz.getX()*squareSpecs.w + xorigen;
+	squareSpecs.y=biz.getY()*squareSpecs.h+ yorigen;
+	
+	SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+}
+	
+	
+	
+
 	
 	
 	

@@ -7,12 +7,13 @@ purpose: Function definitions for Person class
 */
 
 #include"Person.h"
+#include<time.h>;
 using namespace std;
 
 Person::Person(){
 	speed=1;
-	Width(1);
-	Height(1);
+	Width(50);
+	Height(50);
 	position(0,0);
 	srand(unsigned(time(NULL)));
 }

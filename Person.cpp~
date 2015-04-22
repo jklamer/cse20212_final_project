@@ -11,8 +11,8 @@ using namespace std;
 
 Person::Person(){
 	speed=1;
-	Width(1);
-	Height(1);
+	Width(50);
+	Height(50);
 	position(0,0);
 	srand(unsigned(time(NULL)));
 }
@@ -38,8 +38,8 @@ int Person::getY(){
 }
 
 void Person::position(int Xcoord, int Ycoord){
-	int x=Xcoord;
-	int y=Ycoord;
+	 x=Xcoord;
+	 y=Ycoord;
 }
 
 int Person::getWidth(){

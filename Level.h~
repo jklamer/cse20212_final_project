@@ -9,6 +9,8 @@ class definition for level class of each level
 #include<vector>
 #include <SDL2/SDL.h>
 #include <SDL/SDL_image.h>
+#include "Player.h"
+
 using namespace std;
 
 
@@ -22,9 +24,10 @@ class Level
 		void loadLevel(string);
 		void loadImages();
 		int playLevel(string);
-		int menu();
-		int charSelectScreen();
-		int endScreen();
+		//int menu();
+		//int charSelectScreen();
+		//int endScreen();
+		void move(int);
 		
 		
 		
@@ -35,6 +38,9 @@ class Level
 		int carbLevel;
 		int levelNum;
 		int floorArray[20][20];
+		int xorigen;
+		int yorigen;
+		SDL_Rect squareSpecs;
 		string levelFile;
 		vector<SDL_Surface * > images;
 		vector<SDL_Texture *> textures;
@@ -52,7 +58,7 @@ class Level
 		SDL_Surface * recycleRaw=NULL;	
 		SDL_Texture * librarian=NULL;
 		SDL_Surface * librarianRaw=NULL;
-		
+		//Player biz(char1,10,50,3,0,20);
 		
 		
 		
