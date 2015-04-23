@@ -30,7 +30,7 @@ int main( int argc, char* args[])
 	int state=1, level=0;
 	vector<string> levelSelect;
 	levelSelect.push_back(LEVEL1);
-	Level gameLevel(1,1,1,levelSelect[level]);
+	Level gameLevel(0,1,level+1,levelSelect[level]);
 	
 	
 	

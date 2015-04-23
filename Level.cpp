@@ -15,13 +15,16 @@ using namespace std;
 const int SCREEN_WIDTH = 1300;
 const int SCREEN_HEIGHT = 800;
 
+//we had an issue constructing objects with the string in the Level constructor while it still being accessable to the whole class
 string char1("Biz");
 Player biz(char1,10,50,3,0,20);
+Person lib(35);
+
 
 //construct
 Level::Level(int character, int carbonationLevel, int levelNumber, string levelFileName)
 {	
-	charSelect=character;
+	changeChar(character);
 	carbLevel=carbonationLevel;
 	levelNum=levelNumber;
 	levelFile=levelFileName;
@@ -31,14 +34,23 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	int yorigen=100;
 	rendererCheck=true;
 	firstUpload=true;
-	
-	//biz(char1,10,50,3,0,20)
-	
-	
 	squareSpecs.x=300; 
 	squareSpecs.y=100;
 	squareSpecs.w=30;
 	squareSpecs.h=30;
+	
+	srand(time(NULL));
+	
+		
+	players.push_back(biz);
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	//load the level data into the array
 	//if(levelFile != NULL)
@@ -82,7 +94,7 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	
 	//get the screen surface of the window
 	screen=SDL_GetWindowSurface(gameWindow);
-	if(screen==NULL)
+	if(screen == NULL)
 	{
 		cout<<"Screen not found";
 	}
@@ -259,7 +271,7 @@ void Level::loadImages()
 
 void Level::update()
 {
-
+	int numLibs=0;
 	squareSpecs.x=300; 
 	squareSpecs.y=100;
 	SDL_Rect floorSpecs = {squareSpecs.x,squareSpecs.y,squareSpecs.w*levelWidth,squareSpecs.h*levelHeight};
@@ -304,8 +316,7 @@ void Level::update()
  			{
  				SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
  				if(firstUpload){
- 					biz.position(i,j);
- 					firstUpload=false;
+ 					players[charSelect].position(i,j);	
  				}
  				
  			}else if(floorArray[i][j] == 2)
@@ -314,9 +325,17 @@ void Level::update()
  			}else if(floorArray[i][j] == 4)
  			{
  				SDL_RenderCopy(renderer1,recycle,NULL, &squareSpecs);
- 			}else if(floorArray[i][j] == 5)
+ 			}else if(floorArray[i][j] == 5 || floorArray[i][j] == 6)
  			{
+ 				
  				SDL_RenderCopy(renderer1,librarian,NULL, &squareSpecs);
+ 				if(firstUpload)
+ 				{
+	 				librarians.push_back(lib);
+	 				librarians[numLibs].position(j,i);
+	 				numLibs++;
+ 				}
+ 				
  			}
  			
 			
@@ -331,6 +350,7 @@ void Level::update()
 	//{
 	//	SDL_RenderPresent(renderer1);
 	//}
+	firstUpload=false;
 	SDL_UpdateWindowSurface(gameWindow);
 }
 
@@ -340,6 +360,7 @@ void Level::update()
 
 int Level::playLevel(string level)
 {
+	librarians.clear();
 	//load a new level in.
 	levelFile=level;
 	loadLevel(level);
@@ -347,7 +368,7 @@ int Level::playLevel(string level)
 	bool quit =false;
 	SDL_Event e;
 	int state=1;
-	
+	unsigned long int count=0;
 	
 	
 	//while the level has not been quit
@@ -355,7 +376,6 @@ int Level::playLevel(string level)
 	{
 		while(SDL_PollEvent( &e) != 0)
 		{
-			cout<<"polled event"<<endl;
 			if(e.type == SDL_QUIT )
 			{
 				quit=true;
@@ -363,7 +383,6 @@ int Level::playLevel(string level)
 				continue;
 			}else if(e.type == SDL_KEYDOWN)
 			{
-				cout<<"key pressed"<<endl;
 				switch(e.key.keysym.sym)
 				{
 					case SDLK_SPACE:
@@ -393,9 +412,14 @@ int Level::playLevel(string level)
 			}
 		}
 	
-	
-		//insert librarian update code here
+		if(count%10==0)
+		{
+			moveLibs();
+		}
 		
+		update();
+		SDL_Delay(10);
+		count++;
 		//point increment code here
 		
 		//endcheck
@@ -403,85 +427,72 @@ int Level::playLevel(string level)
 		
 		
 		
-		
-		
-		
-			
-	
-	
-	
-	
-	
-	
-	
 	return state;
 }	
 
 void Level::move(int direct)
 {	
-	cout<<"IN MOVE"<<endl;
-	int oldX=biz.getX();cout<<"OLD X:"<<oldX<<endl;
-	int oldY=biz.getY(); cout<<"OLD Y:"<<oldY<<endl;
+	int oldX=players[charSelect].getX();//cout<<"OLD X:"<<oldX<<endl;
+	int oldY=players[charSelect].getY(); //cout<<"OLD Y:"<<oldY<<endl;
 	switch(direct)
 	{
 		case 0:
-			if(biz.getY() == 0)
+			if(players[charSelect].getY() == 0)
 			{
-				biz.position(biz.getX(),biz.getY()); //same place
-			}else if(floorArray[biz.getY()-1][biz.getX()] == 1)
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()); //same place
+			}else if(floorArray[players[charSelect].getY()-1][players[charSelect].getX()] == 1)
 			{
-				biz.position(biz.getX(),biz.getY()); //same place
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()); //same place
 			}else
 			{
-				biz.position(biz.getX(),biz.getY()-1);
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()-1);
 			}
 			break;
 		case 1:
-			if(biz.getY() == 19)
+			if(players[charSelect].getY() == 19)
 			{
-				biz.position(biz.getX(),biz.getY()); //same place
-			}else if(floorArray[biz.getY()+1][biz.getX()] == 1)
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()); //same place
+			}else if(floorArray[players[charSelect].getY()+1][players[charSelect].getX()] == 1)
 			{
-				biz.position(biz.getX(),biz.getY()); //same place
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()); //same place
 			}else
 			{
-				biz.position(biz.getX(),biz.getY()+1);
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()+1);
 			}
 			break;
 		case 2:
-			if(biz.getX() == 0)
+			if(players[charSelect].getX() == 0)
 			{
-				biz.position(biz.getX(),biz.getY()); //same place
-			}else if(floorArray[biz.getY()][biz.getX()-1] == 1)
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()); //same place
+			}else if(floorArray[players[charSelect].getY()][players[charSelect].getX()-1] == 1)
 			{
-				biz.position(biz.getX(),biz.getY()); //same place
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()); //same place
 			}else
 			{
-				biz.position(biz.getX()-1,biz.getY());
+				players[charSelect].position(players[charSelect].getX()-1,players[charSelect].getY());
 			}
 			break;	
 		case 3:
-			if(biz.getX() == 19)
+			if(players[charSelect].getX() == 19)
 			{
-				biz.position(biz.getX(),biz.getY()); //same place
-			}else if(floorArray[biz.getY()][biz.getX()+1] == 1)
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()); //same place
+			}else if(floorArray[players[charSelect].getY()][players[charSelect].getX()+1] == 1)
 			{
-				biz.position(biz.getX(),biz.getY()); //same place
+				players[charSelect].position(players[charSelect].getX(),players[charSelect].getY()); //same place
 			}else
 			{
-				biz.position(biz.getX()+1,biz.getY());
+				players[charSelect].position(players[charSelect].getX()+1,players[charSelect].getY());
 			}
 			break;
 	}
-	//cout<<"New X:"<<biz.getX()<<endl;
-	 //cout<<"New Y:"<<biz.getY()<<endl;
+	//cout<<"New X:"<<players[charSelect].getX()<<endl;
+	 //cout<<"New Y:"<<players[charSelect].getY()<<endl;
 	//cout<<"Square specs h"<<squareSpecs.h<<endl;
 	
 	floorArray[oldY][oldX]=0;
-	floorArray[biz.getY()][biz.getX()]=3;
-	update();
-	//squareSpecs.x=biz.getX()*squareSpecs.w + xorigen;
-	//squareSpecs.y=biz.getY()*(squareSpecs.h) + 100;
+	floorArray[players[charSelect].getY()][players[charSelect].getX()]=3;
+	//squareSpecs.x=players[charSelect].getX()*squareSpecs.w + xorigen;
+	//squareSpecs.y=players[charSelect].getY()*(squareSpecs.h) + 100;
 	 //cout<<squareSpecs.x<<","<<squareSpecs.y<<endl;
 	
 	//SDL_RenderClear(renderer1);
@@ -490,9 +501,110 @@ void Level::move(int direct)
 	
 }
 	
+void Level::changeChar(int newChar)
+{
+	if(newChar >= 0 && newChar<players.size())
+	{
+		charSelect=newChar;
+	}else
+	{
+		charSelect=0;
+	}
+}
+	
+void Level::moveLibs()
+{
+	bool moveMade=false;
+	int oldX;
+	int oldY;
+	for(int i=0;i<librarians.size();i++)
+	{
+		oldX=librarians[i].getX();//cout<<"OLD X:"<<oldX<<endl;
+		oldY=librarians[i].getY(); //cout<<"OLD Y:"<<oldY<<endl;
+		moveMade=false;
+		while(!moveMade)
+		{	
+		
+			
+			switch(rand()%4)
+			{
+				case 0:
+					if(librarians[i].getY() == 0)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+					}else if(floorArray[librarians[i].getY()-1][librarians[i].getX()] == 1)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+					}else if(floorArray[librarians[i].getY()-1][librarians[i].getX()] == 3)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+						moveMade=true;
+					}else 
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()-1);
+						moveMade=true;
+					}
+					break;
+				case 1:
+					if(librarians[i].getY() == 19)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+					}else if(floorArray[librarians[i].getY()+1][librarians[i].getX()] == 1)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+					}else if(floorArray[librarians[i].getY()+1][librarians[i].getX()] == 3)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+						moveMade=true;
+					}else
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()+1);
+						moveMade=true;
+					}
+					break;
+				case 2:
+					if(librarians[i].getX() == 0)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+					}else if(floorArray[librarians[i].getY()][librarians[i].getX()-1] == 1)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+					}else if(floorArray[librarians[i].getY()][librarians[i].getX()-1] == 3)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+						moveMade=true;
+					}else
+					{
+						librarians[i].position(librarians[i].getX()-1,librarians[i].getY());
+						moveMade=true;
+					}
+					break;	
+				case 3:
+					if(librarians[i].getX() == 19)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+					}else if(floorArray[librarians[i].getY()][librarians[i].getX()+1] == 1)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+					}else if(floorArray[librarians[i].getY()][librarians[i].getX()+1] == 3)
+					{
+						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
+						moveMade=true;
+					}else
+					{
+						librarians[i].position(librarians[i].getX()+1,librarians[i].getY());
+						moveMade=true;
+					}
+					break;
+			}
+		}
+	
+		
+		floorArray[oldY][oldX]=0;
+		floorArray[librarians[i].getY()][librarians[i].getX()]=5;
 	
 	
-
+	}
 	
-	
+}
 	
