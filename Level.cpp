@@ -11,6 +11,8 @@ implementation file for level class in Library Crawl
 #include "Level.h"
 #include "Person.h"
 #include "Player.h"
+#include<math.h>
+
 using namespace std;
 const int SCREEN_WIDTH = 1300;
 const int SCREEN_HEIGHT = 800;
@@ -32,8 +34,13 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	levelWidth=20;
 	int xorigen=300;
 	int yorigen=100;
+	
+	//set control variables
 	rendererCheck=true;
 	firstUpload=true;
+	drinking=false;
+	
+	
 	squareSpecs.x=300; 
 	squareSpecs.y=100;
 	squareSpecs.w=30;
@@ -52,16 +59,15 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	
 	
 	
-	//load the level data into the array
-	//if(levelFile != NULL)
-	//{
-		try{
-			loadLevel(levelFile);
-		} catch(char * excep)
-		{
+	//load level file from the constructor
+	try{
+		loadLevel(levelFile);
+	} catch(char * excep)
+	{
 			cout<<excep;
-		}
-	//}
+	}
+
+
 	//initialize image pointers to NULL
 	gameWindow=NULL;
 	screen=NULL;
@@ -206,6 +212,7 @@ void Level::loadImages()
 	string consum_image_path("./Images/consum.png");
 	string recycle_image_path("./Images/recycle.jpg");
 	string librarian_image_path("./Images/librarian.jpg");
+	string biz_drinking_image_path("./Images/biz_drinking.jpg");
 	
 	
 	//load images
@@ -216,6 +223,7 @@ void Level::loadImages()
 	consumRaw = IMG_Load(consum_image_path.c_str());
 	recycleRaw = IMG_Load(recycle_image_path.c_str());
 	librarianRaw = IMG_Load(librarian_image_path.c_str());
+	biz_drinkingRaw=IMG_Load(biz_drinking_image_path.c_str());
 	
 	
 	//store surface pointers
@@ -226,7 +234,7 @@ void Level::loadImages()
 	images.push_back(consumRaw);
 	images.push_back(recycleRaw);
 	images.push_back(librarianRaw);
-	
+	images.push_back(biz_drinkingRaw);
 	
 	//error check
 	for(vector<SDL_Surface *>::iterator it=images.begin();it!=images.end();++it)
@@ -248,12 +256,15 @@ void Level::loadImages()
 	recycle=SDL_CreateTextureFromSurface(renderer1, recycleRaw);
 	SDL_SetColorKey(librarianRaw,SDL_TRUE, SDL_MapRGB(librarianRaw->format,0xFF,0xFF,0xFF));
 	librarian=SDL_CreateTextureFromSurface(renderer1, librarianRaw);
+	SDL_SetColorKey(biz_drinkingRaw,SDL_TRUE, SDL_MapRGB(biz_drinkingRaw->format,0xFF,0xFF,0xFF));
+	biz_drinking=SDL_CreateTextureFromSurface(renderer1, biz_drinkingRaw);
 		
 	//store texture pointers
 	textures.push_back(Biz);
 	textures.push_back(consum);
 	textures.push_back(recycle);
 	textures.push_back(librarian);
+	textures.push_back(biz_drinking);
 	
 	//error check
 	for(vector<SDL_Texture *>::iterator it=textures.begin(); it!=textures.end(); ++it)
@@ -314,7 +325,13 @@ void Level::update()
 				}	
 			}else if(floorArray[i][j] == 3)
  			{
- 				SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+ 				if(drinking)
+ 				{
+ 					SDL_RenderCopy(renderer1,biz_drinking,NULL, &squareSpecs);
+ 				}else{
+ 				
+ 					SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+ 				}
  				if(firstUpload){
  					players[charSelect].position(i,j);	
  				}
@@ -369,7 +386,7 @@ int Level::playLevel(string level)
 	SDL_Event e;
 	int state=1;
 	unsigned long int count=0;
-	
+	const Uint8 *keystates;
 	
 	//while the level has not been quit
 	while(!quit)
@@ -383,40 +400,57 @@ int Level::playLevel(string level)
 				continue;
 			}else if(e.type == SDL_KEYDOWN)
 			{
-				switch(e.key.keysym.sym)
+				if(e.key.keysym.sym == SDLK_SPACE)
 				{
-					case SDLK_SPACE:
-						//enter Drinking code here
-						break;
-					case SDLK_w: //up
-						move(0);
-						break;
-					case SDLK_s: //down
-						move(1);//enter down code here
-						break;
-					case SDLK_a: //left
-						move(2);//enter left code here
-						break;
-					case SDLK_d: //right
-						move(3);//enter left code here
-						break;
-					case SDLK_q:
-						//enter quit code here
-						state=0;
-						quit=true;
-						continue;
-						break;
-					default:
-						break;
+					drinking=true;
+				}else
+				{
+					switch(e.key.keysym.sym)
+					{
+						case SDLK_w: //up
+							move(0);
+							break;
+						case SDLK_s: //down
+							move(1);//enter down code here
+							break;
+						case SDLK_a: //left
+							move(2);//enter left code here
+							break;
+						case SDLK_d: //right
+							move(3);//enter left code here
+							break;
+						case SDLK_q:
+							//enter quit code here
+							state=0;
+							quit=true;
+							continue;
+							break;
+						default:
+							break;
+					}
 				}			
 			}
 		}
 	
+	
+		keystates= SDL_GetKeyboardState( NULL );
+		if(keystates[SDL_SCANCODE_SPACE])
+		{
+			drinking=true;
+		}else
+		{
+			drinking=false;
+		}
 		if(count%10==0)
 		{
 			moveLibs();
 		}
 		
+		if(checkLibrarian(players[charSelect],librarians))
+		{
+			quit=true;
+			state=1;
+		}
 		update();
 		SDL_Delay(10);
 		count++;
@@ -430,6 +464,8 @@ int Level::playLevel(string level)
 	return state;
 }	
 
+
+//move function for the charactor, recieves direction and changes characters position based on that
 void Level::move(int direct)
 {	
 	int oldX=players[charSelect].getX();//cout<<"OLD X:"<<oldX<<endl;
@@ -607,4 +643,80 @@ void Level::moveLibs()
 	}
 	
 }
-	
+
+
+
+
+
+//calculates the "city block" distance, as opposed to bird's flight                     
+
+int Level::distance(Player ibiz, Person dina){
+
+  int distance=0;
+
+  distance=abs((ibiz.getX()-dina.getX()))+abs((ibiz.getY()-dina.getY()));
+
+  return distance;
+
+}
+
+
+//returns 0 if player is too close to librarian, 1 otherwise                            
+
+bool Level::checkLibrarian(Player ibiz, vector<Person> ilibrarians)
+{
+
+	bool end=false;
+	for(int i=0; i<ilibrarians.size(); i++)
+	{
+		if(distance(ibiz, ilibrarians[i])<2)
+		{
+			end=true;//end the game  
+			return end;                                                         
+		}
+  	}
+
+return end;
+}
+
+
+//function that determines what kind of powerup you get, and then implements it. do we need a consumables class??                                                              
+/*
+vector<consumables> powerups;
+
+for(i=0; i<powerups.getSize(); i++){
+
+  if(biz.getX()==powerup[i].getX() && biz.getY()==powerup[i].getY()){
+
+    int powerUp=rand()%6;
+
+    if(powerUp==0){//delete librarian                                                   
+
+      librarians.pop_back();//remove a librarian from librarians vector                 
+
+    }else if(powerUp==1){//if hiccups                                                   
+
+      setCarbLevel(carbLevel + 1);//doing +1 for now...change if need be                
+
+    }else if(powerUp==2){//tums                                                         
+
+      setCarbLevel(carbLevel - 1);//doing -1 for now...change if need be                
+
+      }else if(powerUp==3){//chips                                                      
+
+      setDrinkSpeed(drinkSpeed + 1);//drink faster                                      
+
+    }else if(powerUp==4){//water                                                        
+
+      setDrinkSpeed(drinkSpeed - 1);//drink slower                                      
+
+    }else if(powerUp==5){//candy                                                        
+
+      setSpeed(speed + 1);//increase speed                                              
+
+    }
+
+  }
+
+}
+*/	

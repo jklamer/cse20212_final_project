@@ -35,7 +35,9 @@ class Level
 		//helpers
 		void move(int);
 		void moveLibs();
-	
+		void changeChar(int);
+		int distance(Player, Person);
+		bool checkLibrarian(Player, vector<Person>);
 			
 		//declare variables
 		int levelHeight;
@@ -48,10 +50,15 @@ class Level
 		int yorigen;
 		SDL_Rect squareSpecs;
 		string levelFile;
+		
+		//containers
 		vector<SDL_Surface * > images;
 		vector<SDL_Texture *> textures;
 		vector<Player> players;
 		vector<Person> librarians;
+		
+		
+		//SDL stuff,Surfaces, and Textures to be used
 		SDL_Window * gameWindow=NULL;
 		SDL_Surface * screen=NULL;
 		SDL_Renderer * renderer1=NULL;
@@ -66,10 +73,12 @@ class Level
 		SDL_Surface * recycleRaw=NULL;	
 		SDL_Texture * librarian=NULL;
 		SDL_Surface * librarianRaw=NULL;
+		SDL_Texture * biz_drinking=NULL;
+		SDL_Surface * biz_drinkingRaw=NULL;
+		
+		//control checks
+		bool drinking;
 		bool firstUpload;
-		
-		
-		
 		bool rendererCheck;
 };
 			
