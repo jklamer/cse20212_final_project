@@ -12,7 +12,8 @@ purpose: function definitions for Player class
 #include"Player.h"
 using namespace std;
 
-Player::Player(string uname, int udrinkSpeed, int ucarbTolerance, int udigestionSpeed, double ucarbLevel, int uspeed) : Person(){//I forget how to do this with inheritance - is this correct?
+Player::Player(string uname, int udrinkSpeed, int ucarbTolerance, int udigestionSpeed, double ucarbLevel, int uspeed) : Person()
+{//I forget how to do this with inheritance - is this correct?
   name = uname;
   drinkSpeed = udrinkSpeed;
   carbTolerance = ucarbTolerance;

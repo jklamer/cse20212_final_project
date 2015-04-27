@@ -11,13 +11,21 @@ implementation file for level class in Library Crawl
 #include "Level.h"
 #include "Person.h"
 #include "Player.h"
+#include<math.h>
+
 using namespace std;
 const int SCREEN_WIDTH = 1300;
 const int SCREEN_HEIGHT = 800;
 
 //we had an issue constructing objects with the string in the Level constructor while it still being accessable to the whole class
 string char1("Biz");
-Player biz(char1,10,50,3,0,20);
+string char2("Sledge");
+string char3("Dozer");
+
+	//name,drinkSpeed, carbTolerance, digestionSpeed,carbLevel,speed
+Player biz(char1,10,70,2,0,25);
+Player sledge(char2,15,100,1,0,20);
+Player doz(char3,10,130,2,0,15);
 Person lib(35);
 
 
@@ -30,10 +38,15 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	levelFile=levelFileName;
 	levelHeight=20;
 	levelWidth=20;
-	int xorigen=300;
-	int yorigen=100;
+	xorigen=300;
+	yorigen=100;
+	
+	//set control variables
 	rendererCheck=true;
 	firstUpload=true;
+	drinking=false;
+	
+	
 	squareSpecs.x=300; 
 	squareSpecs.y=100;
 	squareSpecs.w=30;
@@ -43,6 +56,8 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	
 		
 	players.push_back(biz);
+	players.push_back(sledge);
+	players.push_back(doz);
 	
 	
 	
@@ -51,17 +66,15 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	
 	
 	
-	
-	//load the level data into the array
-	//if(levelFile != NULL)
-	//{
-		try{
-			loadLevel(levelFile);
-		} catch(char * excep)
-		{
+	//load level file from the constructor
+	try{
+		loadLevel(levelFile);
+	} catch(char * excep)
+	{
 			cout<<excep;
-		}
-	//}
+	}
+
+
 	//initialize image pointers to NULL
 	gameWindow=NULL;
 	screen=NULL;
@@ -206,6 +219,8 @@ void Level::loadImages()
 	string consum_image_path("./Images/consum.png");
 	string recycle_image_path("./Images/recycle.jpg");
 	string librarian_image_path("./Images/librarian.jpg");
+	string biz_drinking_image_path("./Images/biz_drinking.jpg");
+	string bar_image_path("./Images/bar.jpg");
 	
 	
 	//load images
@@ -216,6 +231,8 @@ void Level::loadImages()
 	consumRaw = IMG_Load(consum_image_path.c_str());
 	recycleRaw = IMG_Load(recycle_image_path.c_str());
 	librarianRaw = IMG_Load(librarian_image_path.c_str());
+	biz_drinkingRaw=IMG_Load(biz_drinking_image_path.c_str());
+	barRaw=IMG_Load(bar_image_path.c_str());
 	
 	
 	//store surface pointers
@@ -226,6 +243,8 @@ void Level::loadImages()
 	images.push_back(consumRaw);
 	images.push_back(recycleRaw);
 	images.push_back(librarianRaw);
+	images.push_back(biz_drinkingRaw);
+	images.push_back(barRaw);
 	
 	
 	//error check
@@ -248,12 +267,19 @@ void Level::loadImages()
 	recycle=SDL_CreateTextureFromSurface(renderer1, recycleRaw);
 	SDL_SetColorKey(librarianRaw,SDL_TRUE, SDL_MapRGB(librarianRaw->format,0xFF,0xFF,0xFF));
 	librarian=SDL_CreateTextureFromSurface(renderer1, librarianRaw);
+	SDL_SetColorKey(biz_drinkingRaw,SDL_TRUE, SDL_MapRGB(biz_drinkingRaw->format,0xFF,0xFF,0xFF));
+	biz_drinking=SDL_CreateTextureFromSurface(renderer1, biz_drinkingRaw);
+	SDL_SetColorKey(barRaw,SDL_TRUE, SDL_MapRGB(barRaw->format,0xFF,0xFF,0xFF));
+	bar=SDL_CreateTextureFromSurface(renderer1, barRaw);
 		
 	//store texture pointers
 	textures.push_back(Biz);
 	textures.push_back(consum);
 	textures.push_back(recycle);
 	textures.push_back(librarian);
+	textures.push_back(biz_drinking);
+	textures.push_back(bar);
+	
 	
 	//error check
 	for(vector<SDL_Texture *>::iterator it=textures.begin(); it!=textures.end(); ++it)
@@ -269,11 +295,13 @@ void Level::loadImages()
 
 
 
-void Level::update()
+void Level::update(double drinkPercent, double carbPercent)
 {
+
+	SDL_RenderClear(renderer1);
 	int numLibs=0;
-	squareSpecs.x=300; 
-	squareSpecs.y=100;
+	squareSpecs.x=xorigen; 
+	squareSpecs.y=yorigen;
 	SDL_Rect floorSpecs = {squareSpecs.x,squareSpecs.y,squareSpecs.w*levelWidth,squareSpecs.h*levelHeight};
 	SDL_Rect wallSpecs= {squareSpecs.x-squareSpecs.w/2,squareSpecs.y-squareSpecs.h/2,squareSpecs.w*(levelWidth+1),squareSpecs.h*(levelHeight+1)};
 	
@@ -299,7 +327,7 @@ void Level::update()
 	
 	for(int i=0;i<levelHeight;i++)
 	{
-		squareSpecs.x=300;
+		squareSpecs.x=xorigen;
 		for(int j=0;j<levelWidth;j++)
 		{
 			//blit proper thing to screen
@@ -314,7 +342,13 @@ void Level::update()
 				}	
 			}else if(floorArray[i][j] == 3)
  			{
- 				SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+ 				if(drinking)
+ 				{
+ 					SDL_RenderCopy(renderer1,biz_drinking,NULL, &squareSpecs);
+ 				}else{
+ 				
+ 					SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+ 				}
  				if(firstUpload){
  					players[charSelect].position(i,j);	
  				}
@@ -327,7 +361,6 @@ void Level::update()
  				SDL_RenderCopy(renderer1,recycle,NULL, &squareSpecs);
  			}else if(floorArray[i][j] == 5 || floorArray[i][j] == 6)
  			{
- 				
  				SDL_RenderCopy(renderer1,librarian,NULL, &squareSpecs);
  				if(firstUpload)
  				{
@@ -346,6 +379,9 @@ void Level::update()
 		squareSpecs.y+=squareSpecs.h;
 	}
 	
+	
+	renderBar(xorigen+650,yorigen,drinkPercent,bar);
+	renderBar(xorigen+650,yorigen+120,carbPercent,bar);
 	//if(rendererCheck)
 	//{
 	//	SDL_RenderPresent(renderer1);
@@ -365,59 +401,159 @@ int Level::playLevel(string level)
 	levelFile=level;
 	loadLevel(level);
 	update();
+	
+	//declare variables
 	bool quit =false;
+	bool consumed=false;
 	SDL_Event e;
 	int state=1;
-	unsigned long int count=0;
-	
+	int speed=players[charSelect].getSpeed();
+	int drinkSpeed=players[charSelect].getDrinkSpeed();
+	int digSpeed=players[charSelect].getDigestionSpeed();
+	int carbLevel=(int)players[charSelect].getCarbLevel();
+	int tolerance=players[charSelect].getCarbTolerance();
+	int drinkAmount=120;
+	unsigned long int count=0,upCount=0,downCount=0,leftCount=0,rightCount=0,drinkCount=0;
+	const Uint8 *keystates;
 	
 	//while the level has not been quit
 	while(!quit)
 	{
-		while(SDL_PollEvent( &e) != 0)
+		SDL_PollEvent( &e) ;
+		keystates= SDL_GetKeyboardState( NULL );
+		
+		if(e.type == SDL_QUIT )
 		{
-			if(e.type == SDL_QUIT )
+			quit=true;
+			state = 99; //exits game
+			continue;
+		}else if(e.type == SDLK_q)
+		{
+			state=0;
+			quit=true;
+			continue;
+		}else
+		{	
+			drinking=false;
+			if(keystates[SDL_SCANCODE_SPACE] && drinkAmount>0)
 			{
-				quit=true;
-				state = 99; //exits game
-				continue;
-			}else if(e.type == SDL_KEYDOWN)
-			{
-				switch(e.key.keysym.sym)
+				if(drinkCount/100 < (drinkCount+drinkSpeed)/100)
 				{
-					case SDLK_SPACE:
-						//enter Drinking code here
-						break;
-					case SDLK_w: //up
-						move(0);
-						break;
-					case SDLK_s: //down
-						move(1);//enter down code here
-						break;
-					case SDLK_a: //left
-						move(2);//enter left code here
-						break;
-					case SDLK_d: //right
-						move(3);//enter left code here
-						break;
-					case SDLK_q:
-						//enter quit code here
-						state=0;
-						quit=true;
-						continue;
-						break;
-					default:
-						break;
-				}			
+					drinkAmount-=5;
+					carbLevel+=10;
+				}
+				drinkCount+=drinkSpeed;
+				drinking=true;
+			}else if(keystates[SDL_SCANCODE_W])
+			{
+				if(upCount/100 < (upCount+speed)/100)
+				{
+					consumed=move(0); //up
+				}
+				upCount+=speed;
+			}else if(keystates[SDL_SCANCODE_S])
+			{
+				if(downCount/100 < (downCount+speed)/100)
+				{
+					consumed=move(1); //down
+				}
+				downCount+=speed;
+			}else if(keystates[SDL_SCANCODE_A])
+			{
+				if(leftCount/100 < (leftCount+speed)/100)
+				{
+					consumed=move(2); //left
+				}
+				leftCount+=speed;
+			}else if(keystates[SDL_SCANCODE_D])
+			{
+				if(rightCount/100 < (rightCount+speed)/100)
+				{
+					consumed=move(3); //right
+				}
+				rightCount+=speed;
+			}else if(keystates[SDL_SCANCODE_Q])
+			{
+				state=0;
+				quit=true;
+			}			
+		}
+		
+		//handle powerup
+		if(consumed)
+		{
+			int powerup=rand()%11;
+			consumed=false;
+			switch(powerup)
+			{
+				case 0: //Taco Bell Carb Level up
+					carbLevel=(tolerance-carbLevel)/2 + carbLevel;
+					break;
+				case 1: //Tums Carb Level down
+					carbLevel/=2;
+					break;
+				case 2: //Candy wall/Sugar Rush speed up
+					speed*=2;
+					break;
+				case 3: //Its monday speed down
+					speed=speed*2/3;
+					break;
+				case 4: //Grew a pair Tolerance Up
+					tolerance=tolerance*3/2;
+					break;
+				case 5:// Had subway an hour ago tolerance down
+					tolerance=tolerance-(tolerance-carbLevel)/2;
+					break;
+				case 6: //Chips drink speed up
+					drinkSpeed*=2;
+					break;
+				case 7: // water drink speed down
+					drinkSpeed=drinkSpeed*2/3;
+					break;
+				case 8: //D-hall Food Digestion speed up
+					digSpeed*=2;
+					break;
+				case 9: // digestion speed down
+					digSpeed/=2;
+					if(digSpeed==0)digSpeed=1;
+					break;
+				case 10:
+					int randoLib=rand()%librarians.size();
+					floorArray[librarians[randoLib].getY()][librarians[randoLib].getX()]=0;
+					librarians.erase(librarians.begin()+randoLib);
+					break;
 			}
+			cout<<"Powerup: "<<powerup<<endl;	
+			//place consuming code here
 		}
 	
+	
+		// move libs
 		if(count%10==0)
 		{
 			moveLibs();
+			if(carbLevel>0)carbLevel-=digSpeed;
 		}
 		
-		update();
+		update((double)drinkAmount/120,(double)carbLevel/tolerance);
+		
+		
+		//begin lose checks
+		if(checkLibrarian(players[charSelect],librarians))
+		{
+			quit=true;
+			objectsUnderPeople.clear();
+			state=1;
+		}
+		if(carbLevel >= tolerance)
+		{
+			quit=true;
+			objectsUnderPeople.clear();
+			state=1;
+		}
+		
+		
+		
 		SDL_Delay(10);
 		count++;
 		//point increment code here
@@ -430,8 +566,11 @@ int Level::playLevel(string level)
 	return state;
 }	
 
-void Level::move(int direct)
+
+//move function for the charactor, recieves direction and changes characters position based on that
+bool Level::move(int direct)
 {	
+	bool consumed=false;
 	int oldX=players[charSelect].getX();//cout<<"OLD X:"<<oldX<<endl;
 	int oldY=players[charSelect].getY(); //cout<<"OLD Y:"<<oldY<<endl;
 	switch(direct)
@@ -488,8 +627,25 @@ void Level::move(int direct)
 	//cout<<"New X:"<<players[charSelect].getX()<<endl;
 	 //cout<<"New Y:"<<players[charSelect].getY()<<endl;
 	//cout<<"Square specs h"<<squareSpecs.h<<endl;
+	if(objectsUnderPeople.count(-1)>0)
+	{
+		floorArray[oldY][oldX]=4;
+		objectsUnderPeople.erase(-1);
+	}else
+	{
+		floorArray[oldY][oldX]=0;
+	}
 	
-	floorArray[oldY][oldX]=0;
+	
+	if(floorArray[players[charSelect].getY()][players[charSelect].getX()] == 4)
+	{
+		objectsUnderPeople[-1]=4;
+	}else if(floorArray[players[charSelect].getY()][players[charSelect].getX()] == 2)
+	{
+		consumed=true;
+	}
+	
+	
 	floorArray[players[charSelect].getY()][players[charSelect].getX()]=3;
 	//squareSpecs.x=players[charSelect].getX()*squareSpecs.w + xorigen;
 	//squareSpecs.y=players[charSelect].getY()*(squareSpecs.h) + 100;
@@ -498,7 +654,8 @@ void Level::move(int direct)
 	//SDL_RenderClear(renderer1);
 	//SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
 	//SDL_RenderPresent(renderer1);
-	
+
+	return consumed;	
 }
 	
 void Level::changeChar(int newChar)
@@ -532,7 +689,7 @@ void Level::moveLibs()
 					if(librarians[i].getY() == 0)
 					{
 						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
-					}else if(floorArray[librarians[i].getY()-1][librarians[i].getX()] == 1)
+					}else if(floorArray[librarians[i].getY()-1][librarians[i].getX()] == 1 || floorArray[librarians[i].getY()-1][librarians[i].getX()] == 6)
 					{
 						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
 					}else if(floorArray[librarians[i].getY()-1][librarians[i].getX()] == 3)
@@ -549,7 +706,7 @@ void Level::moveLibs()
 					if(librarians[i].getY() == 19)
 					{
 						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
-					}else if(floorArray[librarians[i].getY()+1][librarians[i].getX()] == 1)
+					}else if(floorArray[librarians[i].getY()+1][librarians[i].getX()] == 1 || floorArray[librarians[i].getY()+1][librarians[i].getX()] == 6)
 					{
 						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
 					}else if(floorArray[librarians[i].getY()+1][librarians[i].getX()] == 3)
@@ -566,7 +723,7 @@ void Level::moveLibs()
 					if(librarians[i].getX() == 0)
 					{
 						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
-					}else if(floorArray[librarians[i].getY()][librarians[i].getX()-1] == 1)
+					}else if(floorArray[librarians[i].getY()][librarians[i].getX()-1] == 1 || floorArray[librarians[i].getY()][librarians[i].getX()-1] == 6)
 					{
 						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
 					}else if(floorArray[librarians[i].getY()][librarians[i].getX()-1] == 3)
@@ -583,7 +740,7 @@ void Level::moveLibs()
 					if(librarians[i].getX() == 19)
 					{
 						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
-					}else if(floorArray[librarians[i].getY()][librarians[i].getX()+1] == 1)
+					}else if(floorArray[librarians[i].getY()][librarians[i].getX()+1] == 1 || floorArray[librarians[i].getY()][librarians[i].getX()+1] == 6)
 					{
 						librarians[i].position(librarians[i].getX(),librarians[i].getY()); //same place
 					}else if(floorArray[librarians[i].getY()][librarians[i].getX()+1] == 3)
@@ -599,12 +756,128 @@ void Level::moveLibs()
 			}
 		}
 	
+		//stops librarians from eating up recycling bin and consumables
+		if(objectsUnderPeople.count(i)>0)
+		{
+			floorArray[oldY][oldX]=objectsUnderPeople[i];
+			objectsUnderPeople.erase(i);
+		}else
+		{
+			floorArray[oldY][oldX]=0;
+		}
 		
-		floorArray[oldY][oldX]=0;
-		floorArray[librarians[i].getY()][librarians[i].getX()]=5;
+		if(floorArray[librarians[i].getY()][librarians[i].getX()]==4 || floorArray[librarians[i].getY()][librarians[i].getX()]==2)
+		{
+			objectsUnderPeople[i]=floorArray[librarians[i].getY()][librarians[i].getX()];
+		}
+		
+		
+		
+		floorArray[librarians[i].getY()][librarians[i].getX()]=6;
 	
 	
 	}
 	
 }
+
+
+
+
+
+//calculates the "city block" distance, as opposed to bird's flight                     
+
+int Level::distance(Player ibiz, Person dina){
+
+  int distance=0;
+
+  distance=abs((ibiz.getX()-dina.getX()))+abs((ibiz.getY()-dina.getY()));
+
+  return distance;
+
+}
+
+
+//returns 1 if player is too close to librarian, 0 otherwise                            
+
+bool Level::checkLibrarian(Player ibiz, vector<Person> ilibrarians)
+{
+	int catchableDistance;
+	bool end=false;
+	if(drinking)
+	{
+		catchableDistance = 4;
+	}else
+	{
+		catchableDistance = 1;
+	}
 	
+	for(int i=0; i<ilibrarians.size(); i++)
+	{
+		if(distance(ibiz, ilibrarians[i]) <= catchableDistance)
+		{
+			end=true;//end the game  
+			return end;                                                         
+		}
+  	}
+
+return end;
+}
+
+
+
+
+void Level::renderBar(int x, int y,double percentage, SDL_Texture * ibar)
+{
+	int w, h;
+	SDL_QueryTexture(ibar, NULL, NULL, &w, &h);
+	
+	double dw=(double)w;
+	
+	if(percentage>1){percentage=1;}
+	
+	SDL_Rect partofTexturetoRender={0,0,dw*percentage,h};
+	SDL_Rect wholeAreaToRenderto={x,y,300*percentage,60};
+	
+	SDL_RenderCopy(renderer1,ibar,&partofTexturetoRender,&wholeAreaToRenderto);
+}
+
+//function that determines what kind of powerup you get, and then implements it. do we need a consumables class??                                                              
+/*
+vector<consumables> powerups;
+
+for(i=0; i<powerups.getSize(); i++){
+
+  if(biz.getX()==powerup[i].getX() && biz.getY()==powerup[i].getY()){
+
+    int powerUp=rand()%6;
+
+    if(powerUp==0){//delete librarian                                                   
+
+      librarians.pop_back();//remove a librarian from librarians vector                 
+
+    }else if(powerUp==1){//if hiccups                                                   
+
+      setCarbLevel(carbLevel + 1);//doing +1 for now...change if need be                
+
+    }else if(powerUp==2){//tums                                                         
+
+      setCarbLevel(carbLevel - 1);//doing -1 for now...change if need be                
+
+      }else if(powerUp==3){//chips                                                      
+
+      setDrinkSpeed(drinkSpeed + 1);//drink faster                                      
+
+    }else if(powerUp==4){//water                                                        
+
+      setDrinkSpeed(drinkSpeed - 1);//drink slower                                      
+
+    }else if(powerUp==5){//candy                                                        
+
+      setSpeed(speed + 1);//increase speed                                              
+
+    }
+
+  }
+
+}
+*/	

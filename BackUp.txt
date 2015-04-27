@@ -1,0 +1,41 @@
+while(SDL_PollEvent( &e) != 0)
+		{
+			keystates= SDL_GetKeyboardState( NULL );
+			if(e.type == SDL_QUIT )
+			{
+				quit=true;
+				state = 99; //exits game
+				continue;
+			}else if(e.type == SDL_KEYDOWN)
+			{
+				if(keystates[SDL_SCANCODE_SPACE])
+				{
+					drinking=true;
+				}else
+				{
+					switch(e.key.keysym.sym)
+					{
+						case SDLK_w: //up
+							move(0);
+							break;
+						case SDLK_s: //down
+							move(1);//enter down code here
+							break;
+						case SDLK_a: //left
+							move(2);//enter left code here
+							break;
+						case SDLK_d: //right
+							move(3);//enter left code here
+							break;
+						case SDLK_q:
+							//enter quit code here
+							state=0;
+							quit=true;
+							continue;
+							break;
+						default:
+							break;
+					}
+				}			
+			}
+		}

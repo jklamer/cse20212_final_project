@@ -7,6 +7,7 @@ class definition for level class of each level
 #include<iostream>
 #include<string>
 #include<vector>
+#include<map>
 #include <SDL2/SDL.h>
 #include <SDL/SDL_image.h>
 #include "Player.h"
@@ -20,7 +21,7 @@ class Level
 		Level(int, int, int, string);
 		~Level();
 		void print();
-		void update();
+		void update(double=0,double=0);
 		void loadLevel(string);
 		void loadImages();
 		int playLevel(string);
@@ -33,10 +34,12 @@ class Level
 		
 	private:
 		//helpers
-		void move(int);
+		bool move(int);
 		void moveLibs();
 		void changeChar(int);
-	
+		int distance(Player, Person);
+		bool checkLibrarian(Player, vector<Person>);
+		void renderBar(int, int,double, SDL_Texture *);
 			
 		//declare variables
 		int levelHeight;
@@ -49,10 +52,16 @@ class Level
 		int yorigen;
 		SDL_Rect squareSpecs;
 		string levelFile;
+		
+		//containers
 		vector<SDL_Surface * > images;
 		vector<SDL_Texture *> textures;
 		vector<Player> players;
 		vector<Person> librarians;
+		map<int,int> objectsUnderPeople;
+		
+		
+		//SDL stuff,Surfaces, and Textures to be used
 		SDL_Window * gameWindow=NULL;
 		SDL_Surface * screen=NULL;
 		SDL_Renderer * renderer1=NULL;
@@ -67,10 +76,14 @@ class Level
 		SDL_Surface * recycleRaw=NULL;	
 		SDL_Texture * librarian=NULL;
 		SDL_Surface * librarianRaw=NULL;
+		SDL_Texture * biz_drinking=NULL;
+		SDL_Surface * biz_drinkingRaw=NULL;
+		SDL_Texture * bar=NULL;
+		SDL_Surface * barRaw=NULL;
+		
+		//control checks
+		bool drinking;
 		bool firstUpload;
-		
-		
-		
 		bool rendererCheck;
 };
 			
