@@ -7,6 +7,7 @@ class definition for level class of each level
 #include<iostream>
 #include<string>
 #include<vector>
+#include<map>
 #include <SDL2/SDL.h>
 #include <SDL/SDL_image.h>
 #include "Player.h"
@@ -33,7 +34,7 @@ class Level
 		
 	private:
 		//helpers
-		void move(int);
+		bool move(int);
 		void moveLibs();
 		void changeChar(int);
 		int distance(Player, Person);
@@ -57,6 +58,7 @@ class Level
 		vector<SDL_Texture *> textures;
 		vector<Player> players;
 		vector<Person> librarians;
+		map<int,int> objectsUnderPeople;
 		
 		
 		//SDL stuff,Surfaces, and Textures to be used

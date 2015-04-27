@@ -7,6 +7,7 @@ class definition for level class of each level
 #include<iostream>
 #include<string>
 #include<vector>
+#include<map>
 #include <SDL2/SDL.h>
 #include <SDL/SDL_image.h>
 #include "Player.h"
@@ -20,7 +21,7 @@ class Level
 		Level(int, int, int, string);
 		~Level();
 		void print();
-		void update(double=0);
+		void update(double=0,double=0);
 		void loadLevel(string);
 		void loadImages();
 		int playLevel(string);
@@ -57,6 +58,7 @@ class Level
 		vector<SDL_Texture *> textures;
 		vector<Player> players;
 		vector<Person> librarians;
+		map<int,int> objectsUnderPeople;
 		
 		
 		//SDL stuff,Surfaces, and Textures to be used

@@ -297,6 +297,7 @@ void Level::loadImages()
 
 void Level::update(double drinkPercent, double carbPercent)
 {
+
 	SDL_RenderClear(renderer1);
 	int numLibs=0;
 	squareSpecs.x=xorigen; 
@@ -403,6 +404,7 @@ int Level::playLevel(string level)
 	
 	//declare variables
 	bool quit =false;
+	bool consumed=false;
 	SDL_Event e;
 	int state=1;
 	int speed=players[charSelect].getSpeed();
@@ -446,28 +448,28 @@ int Level::playLevel(string level)
 			{
 				if(upCount/100 < (upCount+speed)/100)
 				{
-					move(0); //up
+					consumed=move(0); //up
 				}
 				upCount+=speed;
 			}else if(keystates[SDL_SCANCODE_S])
 			{
 				if(downCount/100 < (downCount+speed)/100)
 				{
-					move(1); //down
+					consumed=move(1); //down
 				}
 				downCount+=speed;
 			}else if(keystates[SDL_SCANCODE_A])
 			{
 				if(leftCount/100 < (leftCount+speed)/100)
 				{
-					move(2); //left
+					consumed=move(2); //left
 				}
 				leftCount+=speed;
 			}else if(keystates[SDL_SCANCODE_D])
 			{
 				if(rightCount/100 < (rightCount+speed)/100)
 				{
-					move(3); //right
+					consumed=move(3); //right
 				}
 				rightCount+=speed;
 			}else if(keystates[SDL_SCANCODE_Q])
@@ -477,6 +479,53 @@ int Level::playLevel(string level)
 			}			
 		}
 		
+		//handle powerup
+		if(consumed)
+		{
+			int powerup=rand()%11;
+			consumed=false;
+			switch(powerup)
+			{
+				case 0: //Taco Bell Carb Level up
+					carbLevel=(tolerance-carbLevel)/2 + carbLevel;
+					break;
+				case 1: //Tums Carb Level down
+					carbLevel/=2;
+					break;
+				case 2: //Candy wall/Sugar Rush speed up
+					speed*=2;
+					break;
+				case 3: //Its monday speed down
+					speed=speed*2/3;
+					break;
+				case 4: //Grew a pair Tolerance Up
+					tolerance=tolerance*3/2;
+					break;
+				case 5:// Had subway an hour ago tolerance down
+					tolerance=tolerance-(tolerance-carbLevel)/2;
+					break;
+				case 6: //Chips drink speed up
+					drinkSpeed*=2;
+					break;
+				case 7: // water drink speed down
+					drinkSpeed=drinkSpeed*2/3;
+					break;
+				case 8: //D-hall Food Digestion speed up
+					digSpeed*=2;
+					break;
+				case 9: // digestion speed down
+					digSpeed/=2;
+					if(digSpeed==0)digSpeed=1;
+					break;
+				case 10:
+					int randoLib=rand()%librarians.size();
+					floorArray[librarians[randoLib].getY()][librarians[randoLib].getX()]=0;
+					librarians.erase(librarians.begin()+randoLib);
+					break;
+			}
+			cout<<"Powerup: "<<powerup<<endl;	
+			//place consuming code here
+		}
 	
 	
 		// move libs
@@ -493,11 +542,13 @@ int Level::playLevel(string level)
 		if(checkLibrarian(players[charSelect],librarians))
 		{
 			quit=true;
+			objectsUnderPeople.clear();
 			state=1;
 		}
 		if(carbLevel >= tolerance)
 		{
 			quit=true;
+			objectsUnderPeople.clear();
 			state=1;
 		}
 		
@@ -517,8 +568,9 @@ int Level::playLevel(string level)
 
 
 //move function for the charactor, recieves direction and changes characters position based on that
-void Level::move(int direct)
+bool Level::move(int direct)
 {	
+	bool consumed=false;
 	int oldX=players[charSelect].getX();//cout<<"OLD X:"<<oldX<<endl;
 	int oldY=players[charSelect].getY(); //cout<<"OLD Y:"<<oldY<<endl;
 	switch(direct)
@@ -575,8 +627,25 @@ void Level::move(int direct)
 	//cout<<"New X:"<<players[charSelect].getX()<<endl;
 	 //cout<<"New Y:"<<players[charSelect].getY()<<endl;
 	//cout<<"Square specs h"<<squareSpecs.h<<endl;
+	if(objectsUnderPeople.count(-1)>0)
+	{
+		floorArray[oldY][oldX]=4;
+		objectsUnderPeople.erase(-1);
+	}else
+	{
+		floorArray[oldY][oldX]=0;
+	}
 	
-	floorArray[oldY][oldX]=0;
+	
+	if(floorArray[players[charSelect].getY()][players[charSelect].getX()] == 4)
+	{
+		objectsUnderPeople[-1]=4;
+	}else if(floorArray[players[charSelect].getY()][players[charSelect].getX()] == 2)
+	{
+		consumed=true;
+	}
+	
+	
 	floorArray[players[charSelect].getY()][players[charSelect].getX()]=3;
 	//squareSpecs.x=players[charSelect].getX()*squareSpecs.w + xorigen;
 	//squareSpecs.y=players[charSelect].getY()*(squareSpecs.h) + 100;
@@ -585,7 +654,8 @@ void Level::move(int direct)
 	//SDL_RenderClear(renderer1);
 	//SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
 	//SDL_RenderPresent(renderer1);
-	
+
+	return consumed;	
 }
 	
 void Level::changeChar(int newChar)
@@ -686,8 +756,23 @@ void Level::moveLibs()
 			}
 		}
 	
+		//stops librarians from eating up recycling bin and consumables
+		if(objectsUnderPeople.count(i)>0)
+		{
+			floorArray[oldY][oldX]=objectsUnderPeople[i];
+			objectsUnderPeople.erase(i);
+		}else
+		{
+			floorArray[oldY][oldX]=0;
+		}
 		
-		floorArray[oldY][oldX]=0;
+		if(floorArray[librarians[i].getY()][librarians[i].getX()]==4 || floorArray[librarians[i].getY()][librarians[i].getX()]==2)
+		{
+			objectsUnderPeople[i]=floorArray[librarians[i].getY()][librarians[i].getX()];
+		}
+		
+		
+		
 		floorArray[librarians[i].getY()][librarians[i].getX()]=6;
 	
 	
