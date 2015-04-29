@@ -7,7 +7,7 @@ string level::menu(){
 		KEY_PRESS_SURFACE_SPACE;
 	}
 
-	string menu_image_path("./Images/menu.jpg");
+	string menu_image_path("./Images/menu.jpeg");
 	menu =IMG_Load(menu_image_path.c_str());
 	while(!quit){
 		while( SDL_PollEvent(&e) != 0 ){

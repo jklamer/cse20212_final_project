@@ -12,21 +12,27 @@ implementation file for level class in Library Crawl
 #include "Person.h"
 #include "Player.h"
 #include<math.h>
+#include<SDL2/SDL_ttf.h>
 
 using namespace std;
-const int SCREEN_WIDTH = 1300;
+const int SCREEN_WIDTH = 1250;
 const int SCREEN_HEIGHT = 800;
+
+SDL_Color textColor = { 255, 255, 255 };
+SDL_Color gameOverTextColor={255,0,0};
 
 //we had an issue constructing objects with the string in the Level constructor while it still being accessable to the whole class
 string char1("Biz");
 string char2("Sledge");
 string char3("Dozer");
+string char4("Ralph");
 
 	//name,drinkSpeed, carbTolerance, digestionSpeed,carbLevel,speed
 Player biz(char1,10,70,2,0,25);
 Player sledge(char2,15,100,1,0,20);
 Player doz(char3,10,130,2,0,15);
-Person lib(35);
+Player ralph(char4,5,130,2,0,20);
+Person lib(12);
 
 
 //construct
@@ -58,7 +64,7 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 	players.push_back(biz);
 	players.push_back(sledge);
 	players.push_back(doz);
-	
+	players.push_back(ralph);
 	
 	
 	
@@ -97,6 +103,11 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 		cout<<"SDL failed to initialize";
 	}
 	
+	if( TTF_Init() == -1 ) 
+	{ 
+		cout<< "SDL_ttf could not initialize! SDL_ttf Error: "<< TTF_GetError()<<endl; 
+	} 
+	
 	//create window
 	gameWindow= SDL_CreateWindow("Library Crawl", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,SCREEN_HEIGHT,SDL_WINDOW_SHOWN);
 	if(gameWindow == NULL)
@@ -125,6 +136,14 @@ Level::Level(int character, int carbonationLevel, int levelNumber, string levelF
 		return;
 	}
 	
+	
+	titleFont=TTF_OpenFont("04B_19__.TTF",32);
+	captionFont=TTF_OpenFont("04B_19__.TTF",20);
+	if(titleFont==NULL || captionFont==NULL)
+	{
+		cout<<"Font did not load"<<endl;
+		
+	}
 	
 	
 	
@@ -155,7 +174,13 @@ Level::~Level()
 		SDL_DestroyTexture(*it);
 		*it=NULL;
 	}
-
+	
+	
+	//Close the font that was used
+	 TTF_CloseFont( titleFont );
+	 TTF_CloseFont(captionFont); 
+	 //Quit SDL_ttf 
+	 TTF_Quit();
 	
 	SDL_RenderClear(renderer1);
 	SDL_DestroyRenderer(renderer1);
@@ -221,7 +246,12 @@ void Level::loadImages()
 	string librarian_image_path("./Images/librarian.jpg");
 	string biz_drinking_image_path("./Images/biz_drinking.jpg");
 	string bar_image_path("./Images/bar.jpg");
-	
+	string sledge_image_path("./Images/sledge.jpg");
+	string sledge_drinking_image_path("./Images/sledgeDrinking.jpg");
+	string doz_image_path("./Images/doz.jpg");
+	string doz_drinking_image_path("./Images/dozDrinking.jpg");
+	string ralph_image_path("./Images/ralph.jpg");
+	string ralph_drinking_image_path("./Images/ralphDrinking.jpg");
 	
 	//load images
 	bookshelf =IMG_Load(bookshelf_image_path.c_str());
@@ -233,7 +263,16 @@ void Level::loadImages()
 	librarianRaw = IMG_Load(librarian_image_path.c_str());
 	biz_drinkingRaw=IMG_Load(biz_drinking_image_path.c_str());
 	barRaw=IMG_Load(bar_image_path.c_str());
-	
+	Title = TTF_RenderText_Solid( titleFont, "Library Crawl", textColor );
+	Carbonation=TTF_RenderText_Solid(captionFont, "Carbonation Level",textColor);
+	RootBeerAmount=TTF_RenderText_Solid(captionFont, "Root Beer Remaining",textColor);
+	GameOver=TTF_RenderText_Solid(titleFont, "GAME OVER", gameOverTextColor);
+	sledgeRaw=IMG_Load(sledge_image_path.c_str());
+	sledge_drinkingRaw=IMG_Load(sledge_drinking_image_path.c_str());
+	dozRaw=IMG_Load(doz_image_path.c_str());
+	doz_drinkingRaw=IMG_Load(doz_drinking_image_path.c_str());
+	ralphRaw=IMG_Load(ralph_image_path.c_str());
+	ralph_drinkingRaw=IMG_Load(ralph_drinking_image_path.c_str());
 	
 	//store surface pointers
 	images.push_back(bookshelf);
@@ -245,6 +284,16 @@ void Level::loadImages()
 	images.push_back(librarianRaw);
 	images.push_back(biz_drinkingRaw);
 	images.push_back(barRaw);
+	images.push_back(Title);
+	images.push_back(Carbonation);
+	images.push_back(RootBeerAmount);
+	images.push_back(GameOver);
+	images.push_back(sledgeRaw);
+	images.push_back(sledge_drinkingRaw);
+	images.push_back(dozRaw);
+	images.push_back(doz_drinkingRaw);
+	images.push_back(ralphRaw);
+	images.push_back(ralph_drinkingRaw);
 	
 	
 	//error check
@@ -271,6 +320,22 @@ void Level::loadImages()
 	biz_drinking=SDL_CreateTextureFromSurface(renderer1, biz_drinkingRaw);
 	SDL_SetColorKey(barRaw,SDL_TRUE, SDL_MapRGB(barRaw->format,0xFF,0xFF,0xFF));
 	bar=SDL_CreateTextureFromSurface(renderer1, barRaw);
+	
+	SDL_SetColorKey(sledgeRaw,SDL_TRUE, SDL_MapRGB(sledgeRaw->format,0xFF,0xFF,0xFF));
+	Sledge=SDL_CreateTextureFromSurface(renderer1, sledgeRaw);
+	SDL_SetColorKey(sledge_drinkingRaw,SDL_TRUE, SDL_MapRGB(sledge_drinkingRaw->format,0xFF,0xFF,0xFF));
+	sledge_drinking=SDL_CreateTextureFromSurface(renderer1, sledge_drinkingRaw);
+	
+	SDL_SetColorKey(dozRaw,SDL_TRUE, SDL_MapRGB(dozRaw->format,0xFF,0xFF,0xFF));
+	Doz=SDL_CreateTextureFromSurface(renderer1, dozRaw);
+	SDL_SetColorKey(doz_drinkingRaw,SDL_TRUE, SDL_MapRGB(doz_drinkingRaw->format,0xFF,0xFF,0xFF));
+	doz_drinking=SDL_CreateTextureFromSurface(renderer1, doz_drinkingRaw);
+	
+	
+	SDL_SetColorKey(ralphRaw,SDL_TRUE, SDL_MapRGB(ralphRaw->format,0xFF,0xFF,0xFF));
+	Ralph=SDL_CreateTextureFromSurface(renderer1, ralphRaw);
+	SDL_SetColorKey(ralph_drinkingRaw,SDL_TRUE, SDL_MapRGB(ralph_drinkingRaw->format,0xFF,0xFF,0xFF));
+	ralph_drinking=SDL_CreateTextureFromSurface(renderer1, ralph_drinkingRaw);
 		
 	//store texture pointers
 	textures.push_back(Biz);
@@ -279,6 +344,27 @@ void Level::loadImages()
 	textures.push_back(librarian);
 	textures.push_back(biz_drinking);
 	textures.push_back(bar);
+	textures.push_back(Sledge);
+	textures.push_back(sledge_drinking);
+	textures.push_back(Doz);
+	textures.push_back(doz_drinking);
+	textures.push_back(Ralph);
+	textures.push_back(ralph_drinking);
+	
+	//order matters
+	faces.push_back(Biz);
+	faces.push_back(Sledge);
+	faces.push_back(Doz);
+	faces.push_back(Ralph);
+	
+	drinkingFaces.push_back(biz_drinking);
+	drinkingFaces.push_back(sledge_drinking);
+	drinkingFaces.push_back(doz_drinking);
+	drinkingFaces.push_back(ralph_drinking);
+	
+	
+	
+	
 	
 	
 	//error check
@@ -298,31 +384,30 @@ void Level::loadImages()
 void Level::update(double drinkPercent, double carbPercent)
 {
 
+	
 	SDL_RenderClear(renderer1);
 	int numLibs=0;
 	squareSpecs.x=xorigen; 
 	squareSpecs.y=yorigen;
 	SDL_Rect floorSpecs = {squareSpecs.x,squareSpecs.y,squareSpecs.w*levelWidth,squareSpecs.h*levelHeight};
 	SDL_Rect wallSpecs= {squareSpecs.x-squareSpecs.w/2,squareSpecs.y-squareSpecs.h/2,squareSpecs.w*(levelWidth+1),squareSpecs.h*(levelHeight+1)};
+	SDL_Rect titleSpecs={squareSpecs.x+10*squareSpecs.w-(Title->w)/2,10,Title->w, Title->h};
+	SDL_Rect carbLevelCap={xorigen+625,yorigen+100,Carbonation->w,Carbonation->h};
+	SDL_Rect rootBeerLevelCap={xorigen+625,yorigen-20,RootBeerAmount->w,RootBeerAmount->h};
 	
 	
-	
+	//render floors and words
 	try{
-	
+		
+		SDL_BlitSurface(Title,NULL,screen, &titleSpecs);
 		SDL_BlitScaled(wall,NULL,screen, &wallSpecs);
 		SDL_BlitScaled(floor,NULL,screen, &floorSpecs);
+		SDL_BlitSurface(Carbonation,NULL,screen, &carbLevelCap);
+		SDL_BlitSurface(RootBeerAmount,NULL,screen, &rootBeerLevelCap);
 	}catch( exception &e)
 	{
 		cout<<e.what();
 	}	
-	
-	//radner a rectangle for the floor
-	//if(rendererCheck)
-	//{
-	
-	//	SDL_SetRenderDrawColor(renderer1,0xF9,0xFD,0xAC,0xFF);
-	//	SDL_RenderFillRect(renderer1, &floorSpecs);
-	//}
 	
 	
 	for(int i=0;i<levelHeight;i++)
@@ -344,10 +429,10 @@ void Level::update(double drinkPercent, double carbPercent)
  			{
  				if(drinking)
  				{
- 					SDL_RenderCopy(renderer1,biz_drinking,NULL, &squareSpecs);
+ 					SDL_RenderCopy(renderer1,drinkingFaces[charSelect],NULL, &squareSpecs);
  				}else{
  				
- 					SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
+ 					SDL_RenderCopy(renderer1,faces[charSelect], NULL, &squareSpecs);
  				}
  				if(firstUpload){
  					players[charSelect].position(i,j);	
@@ -359,6 +444,10 @@ void Level::update(double drinkPercent, double carbPercent)
  			}else if(floorArray[i][j] == 4)
  			{
  				SDL_RenderCopy(renderer1,recycle,NULL, &squareSpecs);
+ 				if(firstUpload){
+ 					endX=j;
+ 					endY=i;	
+ 				}
  			}else if(floorArray[i][j] == 5 || floorArray[i][j] == 6)
  			{
  				SDL_RenderCopy(renderer1,librarian,NULL, &squareSpecs);
@@ -380,8 +469,9 @@ void Level::update(double drinkPercent, double carbPercent)
 	}
 	
 	
-	renderBar(xorigen+650,yorigen,drinkPercent,bar);
-	renderBar(xorigen+650,yorigen+120,carbPercent,bar);
+	renderBar(xorigen+625,yorigen,drinkPercent,bar);
+	
+	renderBar(xorigen+625,yorigen+120,carbPercent,bar);
 	//if(rendererCheck)
 	//{
 	//	SDL_RenderPresent(renderer1);
@@ -397,6 +487,7 @@ void Level::update(double drinkPercent, double carbPercent)
 int Level::playLevel(string level)
 {
 	librarians.clear();
+	
 	//load a new level in.
 	levelFile=level;
 	loadLevel(level);
@@ -413,7 +504,8 @@ int Level::playLevel(string level)
 	int carbLevel=(int)players[charSelect].getCarbLevel();
 	int tolerance=players[charSelect].getCarbTolerance();
 	int drinkAmount=120;
-	unsigned long int count=0,upCount=0,downCount=0,leftCount=0,rightCount=0,drinkCount=0;
+	int libSpeed=lib.getSpeed();
+	unsigned long int count=0,upCount=0,downCount=0,leftCount=0,rightCount=0,drinkCount=0,libSpeedCount=0;
 	const Uint8 *keystates;
 	
 	//while the level has not been quit
@@ -434,6 +526,7 @@ int Level::playLevel(string level)
 			continue;
 		}else
 		{	
+			//handle drinking or moving actions space is first so you can drinking and move
 			drinking=false;
 			if(keystates[SDL_SCANCODE_SPACE] && drinkAmount>0)
 			{
@@ -517,48 +610,73 @@ int Level::playLevel(string level)
 					digSpeed/=2;
 					if(digSpeed==0)digSpeed=1;
 					break;
-				case 10:
+				case 10: // kills a librarian
 					int randoLib=rand()%librarians.size();
 					floorArray[librarians[randoLib].getY()][librarians[randoLib].getX()]=0;
 					librarians.erase(librarians.begin()+randoLib);
 					break;
 			}
-			cout<<"Powerup: "<<powerup<<endl;	
+			//cout<<"Powerup: "<<powerup<<endl;	
 			//place consuming code here
 		}
 	
 	
+		if(libSpeedCount/100 < (libSpeedCount+libSpeed)/100)
+		{
+			moveLibs();
+		}
+		libSpeedCount+=libSpeed;
 		// move libs
 		if(count%10==0)
 		{
-			moveLibs();
+			//moveLibs();
 			if(carbLevel>0)carbLevel-=digSpeed;
 		}
 		
+		//update the screen
 		update((double)drinkAmount/120,(double)carbLevel/tolerance);
 		
 		
 		//begin lose checks
 		if(checkLibrarian(players[charSelect],librarians))
 		{
+			//display game over and reset
+			SDL_Rect gameOverLocation={xorigen+10*squareSpecs.w-(GameOver->w)/2,yorigen+10*squareSpecs.h-(GameOver->h)/2,GameOver->w,GameOver->h};
+			SDL_BlitSurface(GameOver,NULL,screen, &gameOverLocation);
+			SDL_UpdateWindowSurface(gameWindow);	
+			
+			SDL_Delay(3000);
 			quit=true;
 			objectsUnderPeople.clear();
-			state=1;
+			state=-1;
 		}
 		if(carbLevel >= tolerance)
 		{
+			//display game over and reset
+			SDL_Rect gameOverLocation={xorigen+10*squareSpecs.w-(GameOver->w)/2,yorigen+10*squareSpecs.h-(GameOver->h)/2,GameOver->w,GameOver->h};
+			SDL_BlitSurface(GameOver,NULL,screen, &gameOverLocation);
+			SDL_UpdateWindowSurface(gameWindow);	
+			
+			SDL_Delay(3000);
+			quit=true;
+			objectsUnderPeople.clear();
+			state=-1;
+		}
+		
+		//end check
+		if(players[charSelect].getX()==endX && players[charSelect].getY() == endY && drinkAmount <= 0)
+		{
+		
+			players[charSelect].setCarbLevel((double)carbLevel);
 			quit=true;
 			objectsUnderPeople.clear();
 			state=1;
 		}
-		
 		
 		
 		SDL_Delay(10);
 		count++;
-		//point increment code here
 		
-		//endcheck
 	}
 		
 		
@@ -805,7 +923,7 @@ bool Level::checkLibrarian(Player ibiz, vector<Person> ilibrarians)
 	bool end=false;
 	if(drinking)
 	{
-		catchableDistance = 4;
+		catchableDistance = 3;
 	}else
 	{
 		catchableDistance = 1;
@@ -841,43 +959,160 @@ void Level::renderBar(int x, int y,double percentage, SDL_Texture * ibar)
 	SDL_RenderCopy(renderer1,ibar,&partofTexturetoRender,&wholeAreaToRenderto);
 }
 
-//function that determines what kind of powerup you get, and then implements it. do we need a consumables class??                                                              
-/*
-vector<consumables> powerups;
 
-for(i=0; i<powerups.getSize(); i++){
+int Level::menu()
+{
+	int state=0;
+	string menu_image_path("./Images/menu.jpg");
+	SDL_Surface * menuScreen =IMG_Load(menu_image_path.c_str());
+	if(menuScreen == NULL)
+	{
+		cout<<"Failed to load menu";
+		return 99;
+	}
+	
+	SDL_Event e;
+	SDL_Rect fullScreen={0,0,SCREEN_WIDTH, SCREEN_HEIGHT};
+	SDL_BlitScaled(menuScreen,NULL,screen, &fullScreen);
+	SDL_UpdateWindowSurface(gameWindow);
+	bool quit=false;
+	
+	while(!quit){
+		while( SDL_PollEvent(&e) != 0 ){
+			if (e.type == SDL_QUIT) 
+			{
+				quit = true;
+				state=99;
+			
+			}else if (e.type == SDL_KEYDOWN)
+			{
+				switch(e.key.keysym.sym)
+				{
+					case SDLK_RETURN:
+						state=2;
+						quit=true;
+						break;
+					case SDLK_t:
+						state=3;
+						quit=true;
+						break;
+				}
+			}
+		}
+	}
+	SDL_FreeSurface(menuScreen);
+	
+	return state;
+}		
+	
+int Level::charSelectScreen()
+{
+	int state=2;
+	string charSelect_image_path("./Images/charSelect.jpg");
+	SDL_Surface * charSelectScreenX =IMG_Load(charSelect_image_path.c_str());
+	if(charSelectScreenX==NULL)
+	{
+		cout<<"Failed to character select";
+		return 0;
+	}
+	SDL_Event e;
+	SDL_Rect fullScreen={0,0,SCREEN_WIDTH, SCREEN_HEIGHT};
+	SDL_BlitScaled(charSelectScreenX,NULL,screen, &fullScreen);
+	SDL_UpdateWindowSurface(gameWindow);
+	bool quit=false;
+	
+	while(!quit)
+	{
+		while( SDL_PollEvent(&e) != 0 )
+		{
+			if (e.type == SDL_QUIT) 
+			{
+				quit = true;
+				state=99;
 
-  if(biz.getX()==powerup[i].getX() && biz.getY()==powerup[i].getY()){
-
-    int powerUp=rand()%6;
-
-    if(powerUp==0){//delete librarian                                                   
-
-      librarians.pop_back();//remove a librarian from librarians vector                 
-
-    }else if(powerUp==1){//if hiccups                                                   
-
-      setCarbLevel(carbLevel + 1);//doing +1 for now...change if need be                
-
-    }else if(powerUp==2){//tums                                                         
-
-      setCarbLevel(carbLevel - 1);//doing -1 for now...change if need be                
-
-      }else if(powerUp==3){//chips                                                      
-
-      setDrinkSpeed(drinkSpeed + 1);//drink faster                                      
-
-    }else if(powerUp==4){//water                                                        
-
-      setDrinkSpeed(drinkSpeed - 1);//drink slower                                      
-
-    }else if(powerUp==5){//candy                                                        
-
-      setSpeed(speed + 1);//increase speed                                              
-
-    }
-
-  }
-
+			}else if (e.type == SDL_KEYDOWN)
+			{
+				switch(e.key.keysym.sym)
+				{
+					case SDLK_r:
+						changeChar(3);
+						state=1;
+						quit=true;
+						break;
+					case SDLK_d:
+						changeChar(2);
+						state=1;
+						quit=true;
+						break;
+					case SDLK_b:
+						changeChar(0);
+						state=1;
+						quit=true;
+						break;
+					case SDLK_h:
+						changeChar(1);
+						state=1;
+						quit=true;
+						break;
+					case SDLK_q:
+						state=0;
+						quit=true;
+						break;
+				}
+			}
+		}
+	}
+	
+	
+	SDL_FreeSurface(charSelectScreenX);
+	
+	return state;
 }
-*/	
+
+
+int Level::tutorial()
+{
+	
+	int state=3;
+	string tutorial_image_path("./Images/tutorial.jpg");
+	SDL_Surface * tutorialScreen =IMG_Load(tutorial_image_path.c_str());
+	if(tutorialScreen==NULL)
+	{
+		cout<<"Failed to load tutorial";
+		return 0;
+	}
+	SDL_Event e;
+	SDL_Rect fullScreen={0,0,SCREEN_WIDTH, SCREEN_HEIGHT};
+	SDL_BlitScaled(tutorialScreen,NULL,screen, &fullScreen);
+	SDL_UpdateWindowSurface(gameWindow);
+	bool quit=false;
+	
+	while(!quit)
+	{
+		while( SDL_PollEvent(&e) != 0 )
+		{
+			if (e.type == SDL_QUIT) 
+			{
+				quit = true;
+				state = 99;
+
+			}else if (e.type == SDL_KEYDOWN)
+			{
+				switch(e.key.keysym.sym)
+				{
+					case SDLK_q:
+						state=0;
+						quit=true;
+						break;
+				}
+			}
+		}
+	}
+	
+	
+	SDL_FreeSurface(tutorialScreen);
+	
+	return state;
+}
+
+void Level::resetCarbLevels
