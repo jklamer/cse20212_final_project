@@ -29,7 +29,7 @@ string char4("Ralph");
 
 	//name,drinkSpeed, carbTolerance, digestionSpeed,carbLevel,speed
 Player biz(char1,10,70,2,0,25);
-Player sledge(char2,15,100,1,0,20);
+Player sledge(char2,15,100,3,0,20);
 Player doz(char3,10,130,2,0,15);
 Player ralph(char4,5,130,2,0,20);
 Person lib(12);
@@ -415,7 +415,7 @@ void Level::update(double drinkPercent, double carbPercent)
 		squareSpecs.x=xorigen;
 		for(int j=0;j<levelWidth;j++)
 		{
-			//blit proper thing to screen
+			//blit proper things to screen based on current information in array
 			if(floorArray[i][j] == 1)
 			{
 				try
@@ -507,7 +507,8 @@ int Level::playLevel(string level)
 	int libSpeed=lib.getSpeed();
 	unsigned long int count=0,upCount=0,downCount=0,leftCount=0,rightCount=0,drinkCount=0,libSpeedCount=0;
 	const Uint8 *keystates;
-	
+	//stops you from auto losing on a carry over carb level
+	if(carbLevel>=tolerance){carbLevel = tolerance -6;}
 	//while the level has not been quit
 	while(!quit)
 	{
@@ -616,8 +617,6 @@ int Level::playLevel(string level)
 					librarians.erase(librarians.begin()+randoLib);
 					break;
 			}
-			//cout<<"Powerup: "<<powerup<<endl;	
-			//place consuming code here
 		}
 	
 	
@@ -629,8 +628,9 @@ int Level::playLevel(string level)
 		// move libs
 		if(count%10==0)
 		{
-			//moveLibs();
+			
 			if(carbLevel>0)carbLevel-=digSpeed;
+			count=0;
 		}
 		
 		//update the screen
@@ -677,6 +677,7 @@ int Level::playLevel(string level)
 		SDL_Delay(10);
 		count++;
 		
+		
 	}
 		
 		
@@ -691,6 +692,7 @@ bool Level::move(int direct)
 	bool consumed=false;
 	int oldX=players[charSelect].getX();//cout<<"OLD X:"<<oldX<<endl;
 	int oldY=players[charSelect].getY(); //cout<<"OLD Y:"<<oldY<<endl;
+	//determin if new direction valid
 	switch(direct)
 	{
 		case 0:
@@ -742,9 +744,8 @@ bool Level::move(int direct)
 			}
 			break;
 	}
-	//cout<<"New X:"<<players[charSelect].getX()<<endl;
-	 //cout<<"New Y:"<<players[charSelect].getY()<<endl;
-	//cout<<"Square specs h"<<squareSpecs.h<<endl;
+	
+	//handle putting object back on the map once stepped on
 	if(objectsUnderPeople.count(-1)>0)
 	{
 		floorArray[oldY][oldX]=4;
@@ -755,6 +756,7 @@ bool Level::move(int direct)
 	}
 	
 	
+	//handleing dealing with stepping on things
 	if(floorArray[players[charSelect].getY()][players[charSelect].getX()] == 4)
 	{
 		objectsUnderPeople[-1]=4;
@@ -763,15 +765,8 @@ bool Level::move(int direct)
 		consumed=true;
 	}
 	
-	
+	//place new spot
 	floorArray[players[charSelect].getY()][players[charSelect].getX()]=3;
-	//squareSpecs.x=players[charSelect].getX()*squareSpecs.w + xorigen;
-	//squareSpecs.y=players[charSelect].getY()*(squareSpecs.h) + 100;
-	 //cout<<squareSpecs.x<<","<<squareSpecs.y<<endl;
-	
-	//SDL_RenderClear(renderer1);
-	//SDL_RenderCopy(renderer1,Biz, NULL, &squareSpecs);
-	//SDL_RenderPresent(renderer1);
 
 	return consumed;	
 }
@@ -797,6 +792,8 @@ void Level::moveLibs()
 		oldX=librarians[i].getX();//cout<<"OLD X:"<<oldX<<endl;
 		oldY=librarians[i].getY(); //cout<<"OLD Y:"<<oldY<<endl;
 		moveMade=false;
+		
+		//moving librarians in same manner as person but they can't move into a wall. they must alwasy move one direction.
 		while(!moveMade)
 		{	
 		
@@ -946,6 +943,7 @@ return end;
 
 void Level::renderBar(int x, int y,double percentage, SDL_Texture * ibar)
 {
+	//render the percentage of the bar required with its origen at x,y
 	int w, h;
 	SDL_QueryTexture(ibar, NULL, NULL, &w, &h);
 	
@@ -959,7 +957,7 @@ void Level::renderBar(int x, int y,double percentage, SDL_Texture * ibar)
 	SDL_RenderCopy(renderer1,ibar,&partofTexturetoRender,&wholeAreaToRenderto);
 }
 
-
+//handling the menu, 
 int Level::menu()
 {
 	int state=0;
@@ -974,10 +972,12 @@ int Level::menu()
 	SDL_Event e;
 	SDL_Rect fullScreen={0,0,SCREEN_WIDTH, SCREEN_HEIGHT};
 	SDL_BlitScaled(menuScreen,NULL,screen, &fullScreen);
-	SDL_UpdateWindowSurface(gameWindow);
+	
 	bool quit=false;
 	
-	while(!quit){
+	while(!quit)
+	{
+		SDL_UpdateWindowSurface(gameWindow);
 		while( SDL_PollEvent(&e) != 0 ){
 			if (e.type == SDL_QUIT) 
 			{
@@ -1004,7 +1004,9 @@ int Level::menu()
 	
 	return state;
 }		
-	
+
+
+//handle the character select screen	
 int Level::charSelectScreen()
 {
 	int state=2;
@@ -1018,11 +1020,12 @@ int Level::charSelectScreen()
 	SDL_Event e;
 	SDL_Rect fullScreen={0,0,SCREEN_WIDTH, SCREEN_HEIGHT};
 	SDL_BlitScaled(charSelectScreenX,NULL,screen, &fullScreen);
-	SDL_UpdateWindowSurface(gameWindow);
+	
 	bool quit=false;
 	
 	while(!quit)
 	{
+		SDL_UpdateWindowSurface(gameWindow);
 		while( SDL_PollEvent(&e) != 0 )
 		{
 			if (e.type == SDL_QUIT) 
@@ -1070,6 +1073,8 @@ int Level::charSelectScreen()
 }
 
 
+
+//handle the tutorial screen
 int Level::tutorial()
 {
 	
@@ -1084,11 +1089,11 @@ int Level::tutorial()
 	SDL_Event e;
 	SDL_Rect fullScreen={0,0,SCREEN_WIDTH, SCREEN_HEIGHT};
 	SDL_BlitScaled(tutorialScreen,NULL,screen, &fullScreen);
-	SDL_UpdateWindowSurface(gameWindow);
 	bool quit=false;
 	
 	while(!quit)
 	{
+		SDL_UpdateWindowSurface(gameWindow);
 		while( SDL_PollEvent(&e) != 0 )
 		{
 			if (e.type == SDL_QUIT) 
@@ -1115,4 +1120,7 @@ int Level::tutorial()
 	return state;
 }
 
-void Level::resetCarbLevels
+void Level::resetCarbLevels()
+{
+	players[charSelect].setCarbLevel(0);
+}
